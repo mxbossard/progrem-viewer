@@ -1,0 +1,75 @@
+<html lang="FR" >
+<head>
+    <meta charset="UTF-8"> 
+    <style>
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            padding: 0;
+            text-align: center;
+        }
+
+        .code {
+            margin: 20;
+            padding: 0;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .highlight {
+            background-color: orange;
+        }
+
+        .padding-1 {
+            padding-left: 30px;
+        }
+
+        .padding-2 {
+            padding-left: 60px;
+        }
+
+        .padding-3 {
+            padding-left: 90px;
+        }
+
+      </style>
+</head>
+
+<body>
+    <h1 class="titre"></h1>
+
+    <canvas class="progrem">
+        <p>Your browser doesn't support canvas.</p>
+        <p>Votre navigateur ne supporte pas les canvas.</p>
+    </canvas>
+
+    <br/><br/>
+
+    <select class="peinture">
+        <option value="instruction">Peinture par instruction</option>
+        <option value="pixel" selected="selected">Peinture par pixel</option>
+        <option value="ligne">Peinture par ligne</option>
+        <option value="image">Peinture par image</option>
+    </select>
+
+    <button class="peindre">Repeindre</button>
+
+    <br/><br/>
+
+    <div class="code"></div>
+
+    <!--
+    <iframe class="code" src="./coeur_progrem.js"></iframe>
+    -->
+
+    <script>
+        module = {exports:{}}; exports = {};
+    </script>
+
+    <script src="../lib/esprima.js"></script>
+    <script src="../lib/esprima-walk.js"></script>
+    <script src="../lib/escodegen.browser.js"></script>
+    <script src="./bundle.js"></script>
+    
+</body>
+</html>

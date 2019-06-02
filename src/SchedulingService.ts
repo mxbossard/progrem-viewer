@@ -1,0 +1,137 @@
+import { ProgremConfig } from "./ProgremService";
+import { ProgremCode, CodeIterator, CodeStatement } from "./CodeService";
+
+export class ProgremState {
+    constructor(
+        public readonly colonne: number,
+        public readonly ligne: number,
+        public readonly frame: number,
+        public readonly contexte: object,
+        public readonly codeStatement: CodeStatement | null,
+    ) {}
+}
+
+type NewStateCallback = (state: ProgremState) => void;
+export interface CodeExecutionListener {fireCodeExecution: NewStateCallback};
+export interface BoxChangeListener {fireBoxChange: NewStateCallback};
+export interface LineChangeListener {fireLineChange: NewStateCallback};
+export interface FrameChangeListener {fireFrameChange: NewStateCallback};
+
+export interface ProgremScheduler {
+    subscribeCodeExecution(listener: CodeExecutionListener): void
+    subscribePixelChange(listener: BoxChangeListener): void
+    subscribeLineChange(listener: LineChangeListener): void
+    subscribeFrameChange(listener: FrameChangeListener): void
+
+    reset(): void
+    next(): ProgremState
+}
+
+class SimpleProgremScheduler implements ProgremScheduler {
+    
+    private state: ProgremState | null = null;
+    private codeIterator: CodeIterator | null = null;
+
+    private codeExecutionListeners: CodeExecutionListener[] = [];
+    private pixelChangeListeners: BoxChangeListener[] = [];
+    private lineChangeListeners: LineChangeListener[] = [];
+    private frameChangeListeners: FrameChangeListener[] = [];
+
+    constructor(private config: ProgremConfig, private code: ProgremCode) {
+        this.reset();
+    }
+
+    subscribeCodeExecution(listener: CodeExecutionListener): void {
+        this.codeExecutionListeners.push(listener);
+    }    
+    
+    subscribePixelChange(listener: BoxChangeListener): void {
+        this.pixelChangeListeners.push(listener);
+    }
+
+    subscribeLineChange(listener: LineChangeListener): void {
+        this.lineChangeListeners.push(listener);
+    }
+
+    subscribeFrameChange(listener: FrameChangeListener): void {
+        this.frameChangeListeners.push(listener);
+    }
+
+    reset(): void {
+        this.state = new ProgremState(0, 0, 0, {}, null);
+    }
+
+    next(): ProgremState {
+        if (this.state === null) throw new Error('Inconsistent Progrem state !');
+
+        console.log(this.state);
+
+        if (this.codeIterator == null) {
+            this.codeIterator = this.code.iterator(this.state);
+        }
+
+        if (this.codeIterator.hasNext()) {
+            let statement = this.codeIterator.executeNext();
+            let newState = new ProgremState(this.state.colonne, this.state.ligne, this.state.frame, this.state.contexte, statement);
+            this.state = newState;
+            this.codeExecutionListeners.map(l => l.fireCodeExecution(newState));
+            return newState;
+        }
+
+        console.log('Finished iterating over code.')
+
+        let notifyPixelChange = false;
+        let notifyLineChange = false;
+        let notifyFrameChange = false;
+
+        let colonne = this.state.colonne;
+        let ligne = this.state.ligne;
+        let frame = this.state.frame;
+
+        colonne ++;
+        notifyPixelChange = true;
+
+        if (colonne >= this.config.colonnes) {
+            colonne = 0;
+            ligne ++;
+            notifyLineChange = true;
+        }
+
+        if (ligne > this.config.lignes) {
+            ligne = 0;
+            frame ++;
+            notifyFrameChange = true;
+        }
+
+        if (frame > this.config.frames) {
+            frame = 0;
+        }
+
+        let newState = new ProgremState(colonne, ligne, frame, this.state.contexte, null);
+        this.state = newState;
+        this.codeIterator = this.code.iterator(newState);
+
+        if (notifyPixelChange) {
+            this.pixelChangeListeners.map(l => l.fireBoxChange(newState));
+        }
+
+        if (notifyLineChange) {
+            this.lineChangeListeners.map(l => l.fireLineChange(newState));
+        }
+
+        if (notifyFrameChange) {
+            this.frameChangeListeners.map(l => l.fireFrameChange(newState));
+        }
+
+        return newState;
+    }
+    
+}
+
+export namespace SchedulingService {
+
+    export function buildProgremScheduler(config: ProgremConfig, code: ProgremCode) {
+        return new SimpleProgremScheduler(config, code);
+    }
+
+}
