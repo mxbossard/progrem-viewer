@@ -23,13 +23,13 @@ function initialiserProgrem(cadreLargeur, cadreHauteur) {
 
 function colorerProgrem(colonne, ligne, contexte) {
     // Calcul des coordonnées cartesiennes (x, y) du pixel
-    let x = colonne * contexte.resolutionCartesienneEnX + contexte.decallageCartesienEnX;
+    x = colonne * contexte.resolutionCartesienneEnX + contexte.decallageCartesienEnX;
     //console.log(x);
-    let y = ligne * contexte.resolutionCartesienneEnY + contexte.decallageCartesienEnY;
+    y = ligne * contexte.resolutionCartesienneEnY + contexte.decallageCartesienEnY;
     
-    let equationEugenePartieGauche = Math.pow((Math.pow(x, 2) + Math.pow(y, 2) -1), 3);
-    let equationEugenePartieDroite = Math.pow(x, 2) * Math.pow(y, 3)
-    let equationEugeneDifference = equationEugenePartieGauche - equationEugenePartieDroite;
+    equationEugenePartieGauche = Math.pow((Math.pow(x, 2) + Math.pow(y, 2) -1), 3);
+    equationEugenePartieDroite = Math.pow(x, 2) * Math.pow(y, 3)
+    equationEugeneDifference = equationEugenePartieGauche - equationEugenePartieDroite;
     
     var couleur;
     if ( equationEugeneDifference < 0 ) {

@@ -119,7 +119,7 @@ class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeExecutio
                     let ifstmt = node as IfStatement;
                     line = this.appendCodeLine(codeRoot, padding);
                     line.innerHTML = 'if ( <span>' + Escodegen.generate(ifstmt.test) + '</span> ) {';
-                    this.mapping.setValue(ifstmt.test, line);
+                    this.mapping.setValue(ifstmt, line);
     
                     if (ifstmt.alternate) {
                         stack.unshift({type: 'EndBlockStatement'}); // Hack to delay a block end
@@ -160,6 +160,10 @@ export namespace ProgremService {
         CodeService.loadProgrem(url).then(code => {
             let progremCode = CodeService.progremCodeFactory.build(code);
             
+            // Load initProgrem Function code
+            let initProgremFunctionCode = Escodegen.generate(progremCode.initialiserProgremFunction());
+            (window as any).eval(initProgremFunctionCode);
+
             scheduler = SchedulingService.buildProgremScheduler(progremConfig, progremCode);
 
             let progremInspector = new BasicHtmlEsprimaProgremInspector(progremCode, scheduler);
@@ -167,6 +171,7 @@ export namespace ProgremService {
             let codeElement = document.querySelector('.code');
             console.log('codeElement', codeElement);
             progremInspector.attach(codeElement);
+            
             timer(0);
         });
     }
@@ -174,7 +179,7 @@ export namespace ProgremService {
     function timer(timestamp: number) {
         window.requestAnimationFrame(timer);
 
-        if (timestamp - previousRepaintTime < 1000) {
+        if (timestamp - previousRepaintTime < 500) {
             return;
         }
 

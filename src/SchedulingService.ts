@@ -58,7 +58,11 @@ class SimpleProgremScheduler implements ProgremScheduler {
     }
 
     reset(): void {
-        this.state = new ProgremState(0, 0, 0, {}, null);
+        // Call just evaluated initialiserProgrem function
+        // @ts-ignore
+        let initContexte = initialiserProgrem(this.config.colonnes, this.config.lignes);
+        console.log('Loaded initial contexte: ', initContexte);
+        this.state = new ProgremState(0, 0, 0, {}, initContexte);
     }
 
     next(): ProgremState {
@@ -84,30 +88,30 @@ class SimpleProgremScheduler implements ProgremScheduler {
         let notifyLineChange = false;
         let notifyFrameChange = false;
 
-        let colonne = this.state.colonne;
-        let ligne = this.state.ligne;
-        let frame = this.state.frame;
+        let _colonne = this.state.colonne;
+        let _ligne = this.state.ligne;
+        let _frame = this.state.frame;
 
-        colonne ++;
+        _colonne ++;
         notifyPixelChange = true;
 
-        if (colonne >= this.config.colonnes) {
-            colonne = 0;
-            ligne ++;
+        if (_colonne >= this.config.colonnes) {
+            _colonne = 0;
+            _ligne ++;
             notifyLineChange = true;
         }
 
-        if (ligne > this.config.lignes) {
-            ligne = 0;
-            frame ++;
+        if (_ligne > this.config.lignes) {
+            _ligne = 0;
+            _frame ++;
             notifyFrameChange = true;
         }
 
-        if (frame > this.config.frames) {
-            frame = 0;
+        if (_frame > this.config.frames) {
+            _frame = 0;
         }
 
-        let newState = new ProgremState(colonne, ligne, frame, this.state.contexte, null);
+        let newState = new ProgremState(_colonne, _ligne, _frame, this.state.contexte, null);
         this.state = newState;
         this.codeIterator = this.code.iterator(newState);
 
