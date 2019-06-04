@@ -10,14 +10,9 @@ export class ProgremState {
         public readonly colonne: number,
         public readonly ligne: number,
         public readonly frame: number,
-        public readonly contexte: object,
+        public contexte: object,
         public readonly codeStatement: CodeStatement | null,
-    ) {
-        this.eval = function() {
-            let local_eval = eval;
-            return local_eval;
-        }();
-    }
+    ) {}
 
     public eval(expr: string): any {
         return this.evalScope.globalEval(expr);
@@ -26,13 +21,13 @@ export class ProgremState {
 
 type NewStateCallback = (state: ProgremState) => void;
 export interface CodeExecutionListener {fireCodeExecution: NewStateCallback};
-export interface BoxChangeListener {fireBoxChange: NewStateCallback};
+export interface GridChangeListener {fireBoxChange: NewStateCallback};
 export interface LineChangeListener {fireLineChange: NewStateCallback};
 export interface FrameChangeListener {fireFrameChange: NewStateCallback};
 
 export interface ProgremScheduler {
     subscribeCodeExecution(listener: CodeExecutionListener): void
-    subscribePixelChange(listener: BoxChangeListener): void
+    subscribeGridChange(listener: GridChangeListener): void
     subscribeLineChange(listener: LineChangeListener): void
     subscribeFrameChange(listener: FrameChangeListener): void
 
@@ -47,7 +42,7 @@ class SimpleProgremScheduler implements ProgremScheduler {
     private codeIterator: CodeIterator | null = null;
 
     private codeExecutionListeners: CodeExecutionListener[] = [];
-    private pixelChangeListeners: BoxChangeListener[] = [];
+    private gridChangeListeners: GridChangeListener[] = [];
     private lineChangeListeners: LineChangeListener[] = [];
     private frameChangeListeners: FrameChangeListener[] = [];
 
@@ -59,8 +54,8 @@ class SimpleProgremScheduler implements ProgremScheduler {
         this.codeExecutionListeners.push(listener);
     }    
     
-    subscribePixelChange(listener: BoxChangeListener): void {
-        this.pixelChangeListeners.push(listener);
+    subscribeGridChange(listener: GridChangeListener): void {
+        this.gridChangeListeners.push(listener);
     }
 
     subscribeLineChange(listener: LineChangeListener): void {
@@ -74,10 +69,11 @@ class SimpleProgremScheduler implements ProgremScheduler {
     reset(): ProgremState {
         // Call just evaluated initialiserProgrem function
         // @ts-ignore
-        let initContexte = initialiserProgrem(this.config.colonnes, this.config.lignes);
-        console.log('Loaded initial contexte: ', initContexte);
-        let state = new ProgremState(0, 0, 0, {}, initContexte);
-
+        let initialContexte: object = initialiserProgrem(this.config.colonnes, this.config.lignes);
+        console.log('Loaded initial contexte: ', initialContexte);
+        let state = new ProgremState(0, 0, 0, initialContexte, null);
+        //state.contexte = initContexte;
+        console.log('state: ', state);
         return state;
     }
 
@@ -88,13 +84,13 @@ class SimpleProgremScheduler implements ProgremScheduler {
     next(): ProgremState {
         if (!this.state) throw new Error('Inconsistent Progrem state !');
 
-        console.log(this.state);
+        //console.log(this.state);
 
         if (this.codeIterator == null) {
             this.codeIterator = this.code.iterator(this.state);
         }
 
-        console.log('hasNext:', this.codeIterator.hasNext());
+        //console.log('hasNext:', this.codeIterator.hasNext());
 
         if (this.codeIterator.hasNext()) {
             let statement = this.codeIterator.executeNext();
@@ -104,7 +100,7 @@ class SimpleProgremScheduler implements ProgremScheduler {
             return newState;
         }
 
-        console.log('Finished iterating over code.')
+        //console.log('Finished iterating over code.')
 
         let notifyPixelChange = false;
         let notifyLineChange = false;
@@ -134,20 +130,21 @@ class SimpleProgremScheduler implements ProgremScheduler {
         }
 
         let newState = new ProgremState(_colonne, _ligne, _frame, this.state.contexte, null);
-        this.state = newState;
-        this.codeIterator = this.code.iterator(newState);
-
+ 
         if (notifyPixelChange) {
-            this.pixelChangeListeners.map(l => l.fireBoxChange(newState));
+            this.gridChangeListeners.map(l => l.fireBoxChange(this.state));
         }
 
         if (notifyLineChange) {
-            this.lineChangeListeners.map(l => l.fireLineChange(newState));
+            this.lineChangeListeners.map(l => l.fireLineChange(this.state));
         }
 
         if (notifyFrameChange) {
-            this.frameChangeListeners.map(l => l.fireFrameChange(newState));
+            this.frameChangeListeners.map(l => l.fireFrameChange(this.state));
         }
+
+        this.state = newState;
+        this.codeIterator = this.code.iterator(newState);
 
         return newState;
     }
