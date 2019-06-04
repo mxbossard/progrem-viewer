@@ -1,14 +1,27 @@
 import { ProgremConfig } from "./ProgremService";
 import { ProgremCode, CodeIterator, CodeStatement } from "./CodeService";
+import { EvalScope } from "./EvalService";
 
 export class ProgremState {
+
+    public readonly evalScope = new EvalScope;
+
     constructor(
         public readonly colonne: number,
         public readonly ligne: number,
         public readonly frame: number,
         public readonly contexte: object,
         public readonly codeStatement: CodeStatement | null,
-    ) {}
+    ) {
+        this.eval = function() {
+            let local_eval = eval;
+            return local_eval;
+        }();
+    }
+
+    public eval(expr: string): any {
+        return this.evalScope.globalEval(expr);
+    }
 }
 
 type NewStateCallback = (state: ProgremState) => void;
@@ -23,13 +36,14 @@ export interface ProgremScheduler {
     subscribeLineChange(listener: LineChangeListener): void
     subscribeFrameChange(listener: FrameChangeListener): void
 
-    reset(): void
+    reset(): ProgremState
+    current(): ProgremState
     next(): ProgremState
 }
 
 class SimpleProgremScheduler implements ProgremScheduler {
     
-    private state: ProgremState | null = null;
+    private state: ProgremState;
     private codeIterator: CodeIterator | null = null;
 
     private codeExecutionListeners: CodeExecutionListener[] = [];
@@ -38,7 +52,7 @@ class SimpleProgremScheduler implements ProgremScheduler {
     private frameChangeListeners: FrameChangeListener[] = [];
 
     constructor(private config: ProgremConfig, private code: ProgremCode) {
-        this.reset();
+        this.state = this.reset();
     }
 
     subscribeCodeExecution(listener: CodeExecutionListener): void {
@@ -57,22 +71,30 @@ class SimpleProgremScheduler implements ProgremScheduler {
         this.frameChangeListeners.push(listener);
     }
 
-    reset(): void {
+    reset(): ProgremState {
         // Call just evaluated initialiserProgrem function
         // @ts-ignore
         let initContexte = initialiserProgrem(this.config.colonnes, this.config.lignes);
         console.log('Loaded initial contexte: ', initContexte);
-        this.state = new ProgremState(0, 0, 0, {}, initContexte);
+        let state = new ProgremState(0, 0, 0, {}, initContexte);
+
+        return state;
+    }
+
+    current(): ProgremState {
+        return this.state;
     }
 
     next(): ProgremState {
-        if (this.state === null) throw new Error('Inconsistent Progrem state !');
+        if (!this.state) throw new Error('Inconsistent Progrem state !');
 
         console.log(this.state);
 
         if (this.codeIterator == null) {
             this.codeIterator = this.code.iterator(this.state);
         }
+
+        console.log('hasNext:', this.codeIterator.hasNext());
 
         if (this.codeIterator.hasNext()) {
             let statement = this.codeIterator.executeNext();

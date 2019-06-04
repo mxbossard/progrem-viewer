@@ -119,7 +119,7 @@ class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeExecutio
                     let ifstmt = node as IfStatement;
                     line = this.appendCodeLine(codeRoot, padding);
                     line.innerHTML = 'if ( <span>' + Escodegen.generate(ifstmt.test) + '</span> ) {';
-                    this.mapping.setValue(ifstmt, line);
+                    this.mapping.setValue(ifstmt.test, line);
     
                     if (ifstmt.alternate) {
                         stack.unshift({type: 'EndBlockStatement'}); // Hack to delay a block end

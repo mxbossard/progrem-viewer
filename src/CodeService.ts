@@ -4,6 +4,7 @@ import * as EsprimaWalk from 'esprima-walk';
 import * as Escodegen from 'escodegen';
 import { BaseNode, FunctionDeclaration, BlockStatement, IfStatement, ReturnStatement, Statement } from 'estree';
 import { ProgremState } from './SchedulingService';
+import { Stack } from 'typescript-collections';
 
 export class CodeStatement {
     constructor(
@@ -56,6 +57,7 @@ class BasicEsprimaCodeIterator implements CodeIterator {
     private stack: BaseNode[] = [];
     private codeStatementFactory = new BasicEsprimaCodeStatementFactory();
     private returnValue: any = null;
+    private finished = false
 
     constructor(
             private rootNode: BaseNode, 
@@ -71,9 +73,9 @@ class BasicEsprimaCodeIterator implements CodeIterator {
         let _ligne = this.state.ligne;
         let _contexte = this.state.contexte;
 
-        console.log('Before evaluating progrem function params:', _colonne, _ligne, _contexte);
-        (window as any).eval('var colonne = ' + _colonne + ', ligne = ' + _ligne + ';');
-        (window as any).eval('var contexte = ' + JSON.stringify(_contexte));
+        //console.log('Before evaluating progrem function params:', _colonne, _ligne, _contexte);
+        this.state.eval('var colonne = ' + _colonne + ', ligne = ' + _ligne + ';');
+        this.state.eval('var contexte = ' + JSON.stringify(_contexte));
 
         /*
         eval(`if (colonne !== ${_colonne}) throw new Error("evaluation is broken for colonne !")`);
@@ -81,7 +83,7 @@ class BasicEsprimaCodeIterator implements CodeIterator {
         eval(`if (!contexte) throw new Error("evaluation is broken for contexte !")`);
         */
 
-        console.log('After evaluating')
+        //console.log('After evaluating')
         // @ts-ignore
         //console.log('After evaluating progrem function params:', colonne, ligne, contexte);
 
@@ -95,6 +97,8 @@ class BasicEsprimaCodeIterator implements CodeIterator {
             // Get the first node on the stack
             let node = this.stack.shift();
 
+            //console.log('Node:', node);
+
             if (!node) {
                 throw new Error('Stack should not be empty !');
             }
@@ -102,44 +106,50 @@ class BasicEsprimaCodeIterator implements CodeIterator {
             var stmt;
 
             switch(node.type) {
-
                 case 'FunctionDeclaration':
                     let func = node as FunctionDeclaration;
-                    func.body.body.map(x => this.stack.push(x));
+                    this.stack.unshift(func.body);
                     this.declareProgremArguments();
                     break;
 
                 case 'BlockStatement':
                     let block = node as BlockStatement;
-                    block.body.map(x => this.stack.unshift(x));
+                    block.body.slice().reverse().map(x => {
+                        //console.log('BlockStatement unshifting:', x);
+                        this.stack.unshift(x)
+                    });
                     break;
 
                 case 'IfStatement':
                     stmt = node as IfStatement;
                     let testCode = Escodegen.generate(stmt.test);
 
-                    let testResult = (window as any).eval(testCode);
-                    console.log('IfStatement test evaluate to: ', testResult);
+                    let testResult = this.state.eval(testCode);
+                    //console.log('IfStatement test evaluate to: ', testResult);
                     if (testResult) {
+                        //console.log('Then unshifting:', stmt.consequent);
                         this.stack.unshift(stmt.consequent);
                     } else {
                         if (stmt.alternate) {
+                            //console.log('Else unshifting:', stmt.alternate);
                             this.stack.unshift(stmt.alternate);
                         }
                     }
 
-                    return this.codeStatementFactory.build(stmt);
+                    return this.codeStatementFactory.build(stmt.test);
 
                 case 'ReturnStatement':
                     stmt = node as ReturnStatement;
-                    this.returnValue = (window as any).eval(Escodegen.generate(stmt.argument));
+                    this.returnValue = this.state.eval(Escodegen.generate(stmt.argument));
+                    this.finished = true;
                     return this.codeStatementFactory.build(stmt);
 
                 default:
+                    //console.log('Node:', node);
                     let code = Escodegen.generate(node);
-                    console.log('Generated code:', code);
-                    let evalResult = (window as any).eval(code);
-                    console.log('Evaluate to:', evalResult);
+                    //console.log('Generated code:', code);
+                    let evalResult = this.state.eval(code);
+                    //console.log('Evaluate to:', evalResult);
                     return this.codeStatementFactory.build(node);
             }
         } while (this.stack.length > 0);
@@ -148,6 +158,10 @@ class BasicEsprimaCodeIterator implements CodeIterator {
     }    
     
     hasNext(): boolean {
+        if (this.finished) {
+            return false;
+        }
+
         let nodes = this.stack.slice(0);
         while (nodes.length > 0) {
             let node = nodes.shift();
@@ -155,8 +169,24 @@ class BasicEsprimaCodeIterator implements CodeIterator {
                 if (node.type !== 'BlockStatement') {
                     return true;
                 } else {
+                    let blocks: BlockStatement[] = [];
                     let block = node as BlockStatement;
-                    block.body.map(x => this.stack.unshift(x));
+                    blocks.push(block);
+                    // Parsours recursivement les blocks à la recherche de noeud qui ne sont pas des blocks
+                    let hasNext = false;
+                    while (!hasNext && blocks.length > 0) {
+                        let b = blocks.shift();
+                        if (b) {
+                            b.body.map(x => {
+                                if (x.type !== 'BlockStatement') {
+                                    hasNext = true;
+                                } else {
+                                    blocks.push(x);
+                                }
+                            });
+                        }
+                    }
+                    return hasNext;
                 }
             }
         }
@@ -165,7 +195,7 @@ class BasicEsprimaCodeIterator implements CodeIterator {
     
 }
 
-class EsprimaProgremCode implements ProgremCode {
+export class EsprimaProgremCode implements ProgremCode {
 
     private esprimaProgram: Esprima.Program;
 
