@@ -66,30 +66,12 @@ class BasicEsprimaCodeIterator implements CodeIterator {
     }
 
     private declareProgremArguments() {
-        //(window as any).eval(`const colonne = ${this.state.colonne}, ligne = ${this.state.ligne};`);
-        //(window as any).eval('const contexte = ' + JSON.stringify(this.state.contexte) + ';');
-
         let _colonne = this.state.colonne;
         let _ligne = this.state.ligne;
         let _contexte = this.state.contexte;
 
-        //console.log('Before evaluating progrem function params:', _colonne, _ligne, _contexte);
         this.state.eval('var colonne = ' + _colonne + ', ligne = ' + _ligne + ';');
         this.state.eval('var contexte = ' + JSON.stringify(_contexte));
-
-        /*
-        eval(`if (colonne !== ${_colonne}) throw new Error("evaluation is broken for colonne !")`);
-        eval(`if (ligne !== ${_ligne}) throw new Error("evaluation is broken for colonne !")`);
-        eval(`if (!contexte) throw new Error("evaluation is broken for contexte !")`);
-        */
-
-        //console.log('After evaluating')
-        // @ts-ignore
-        //console.log('After evaluating progrem function params:', colonne, ligne, contexte);
-
-        //let result = (window as any).eval('colonne = 0;');
-        //console.log('declareProgremArguments: ', result);
-        //(window as any).eval('const contexte = ' + JSON.stringify(this.state.contexte));
     }
 
     executeNext(): CodeStatement {

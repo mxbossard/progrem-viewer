@@ -72,8 +72,6 @@ class SimpleProgremScheduler implements ProgremScheduler {
         let initialContexte: object = initialiserProgrem(this.config.colonnes, this.config.lignes);
         console.log('Loaded initial contexte: ', initialContexte);
         let state = new ProgremState(0, 0, 0, initialContexte, null);
-        //state.contexte = initContexte;
-        console.log('state: ', state);
         return state;
     }
 
