@@ -1,10 +1,9 @@
 
-import * as Esprima from 'esprima';
-import * as EsprimaWalk from 'esprima-walk';
-import * as Escodegen from 'escodegen';
+import { Program, parseModule } from 'esprima';
+import { walk as esprimaWalk } from 'esprima-walk';
+import { generate as escodeGenerate } from 'escodegen';
 import { BaseNode, FunctionDeclaration, BlockStatement, IfStatement, ReturnStatement, Statement } from 'estree';
 import { ProgremState } from './SchedulingService';
-import { Stack } from 'typescript-collections';
 
 export class CodeStatement {
     constructor(
@@ -92,6 +91,7 @@ class BasicEsprimaCodeIterator implements CodeIterator {
                     let func = node as FunctionDeclaration;
                     this.stack.unshift(func.body);
                     this.declareProgremArguments();
+                    return this.codeStatementFactory.build(func);
                     break;
 
                 case 'BlockStatement':
@@ -104,7 +104,7 @@ class BasicEsprimaCodeIterator implements CodeIterator {
 
                 case 'IfStatement':
                     stmt = node as IfStatement;
-                    let testCode = Escodegen.generate(stmt.test);
+                    let testCode = escodeGenerate(stmt.test);
 
                     let testResult = this.state.eval(testCode);
                     //console.log('IfStatement test evaluate to: ', testResult);
@@ -122,13 +122,13 @@ class BasicEsprimaCodeIterator implements CodeIterator {
 
                 case 'ReturnStatement':
                     stmt = node as ReturnStatement;
-                    this.returnValue = this.state.eval(Escodegen.generate(stmt.argument));
+                    this.returnValue = this.state.eval(escodeGenerate(stmt.argument));
                     this.finished = true;
                     return this.codeStatementFactory.build(stmt);
 
                 default:
                     //console.log('Node:', node);
-                    let code = Escodegen.generate(node);
+                    let code = escodeGenerate(node);
                     //console.log('Generated code:', code);
                     let evalResult = this.state.eval(code);
                     //console.log('Evaluate to:', evalResult);
@@ -179,16 +179,16 @@ class BasicEsprimaCodeIterator implements CodeIterator {
 
 export class EsprimaProgremCode implements ProgremCode {
 
-    private esprimaProgram: Esprima.Program;
+    private esprimaProgram: Program;
 
     constructor(code: string) {
-        this.esprimaProgram = Esprima.parseModule(code);
+        this.esprimaProgram = parseModule(code);
     }
 
 
     public initialiserProgremFunction(): FunctionDeclaration {
         var result: FunctionDeclaration | null = null;
-        EsprimaWalk.walk(this.esprimaProgram, node => {
+        esprimaWalk(this.esprimaProgram, node => {
             if( node.type === 'FunctionDeclaration' && node.id && node.id.name === 'initialiserProgrem' ) {
                 result = node;
             }
@@ -201,7 +201,7 @@ export class EsprimaProgremCode implements ProgremCode {
 
     public colorerProgremFunction(): FunctionDeclaration {
         var result: FunctionDeclaration | null = null;
-        EsprimaWalk.walk(this.esprimaProgram, node => {
+        esprimaWalk(this.esprimaProgram, node => {
             if( node.type === 'FunctionDeclaration' && node.id && node.id.name === 'colorerProgrem' ) {
                 result = node;
             }

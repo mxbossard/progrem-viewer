@@ -1,8 +1,10 @@
-import * as Escodegen from 'escodegen';
+import { generate as escodeGenerate } from 'escodegen';
+import { create as md5Create } from 'js-md5';
 import { ProgremCode } from "./CodeService";
 import { FunctionDeclaration, BaseNode, BlockStatement, IfStatement, Expression, VariableDeclaration, VariableDeclarator, ExpressionStatement, AssignmentExpression, ReturnStatement, ConditionalExpression, BinaryExpression } from 'estree';
-import { Dictionary } from 'typescript-collections';
-import { ProgremScheduler, ProgremState, CodeExecutionListener } from './SchedulingService';
+//import { Dictionary } from 'typescript-collections';
+import { ProgremScheduler, ProgremState, CodeExecutionListener, GridChangeListener } from './SchedulingService';
+import { AstHelper } from './AstHelper';
 
 
 export interface ProgremInspector {
@@ -10,17 +12,19 @@ export interface ProgremInspector {
     attach(element: Element | null): void
 }
 
-export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeExecutionListener {
+export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeExecutionListener, GridChangeListener {
 
     private progremCodeLines: HTMLElement[] = [];
     private attachedElement: Element | null = null;
-    private mapping: Dictionary<BaseNode, HTMLElement> = new Dictionary(x => Escodegen.generate(x));
+    private mapping: Map<BaseNode, HTMLElement> = new Map();
+    private hintStackContainer: HTMLElement | null = null;
 
     constructor(
-        private progremCode: ProgremCode, 
+        private progremCode: ProgremCode,
         private scheduler: ProgremScheduler
-        ) {
-            scheduler.subscribeCodeExecution(this);
+    ) {
+        scheduler.subscribeCodeExecution(this);
+        scheduler.subscribeGridChange(this);
         this.buildHtmlTree2();
     }
 
@@ -28,23 +32,127 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
         this.attachedElement = element;
 
         if (element) {
-            this.progremCodeLines.map(elt => {element.appendChild(elt)});
+            let codeContainer = document.createElement('div');
+            codeContainer.classList.add('codeContainer');
+            this.hintStackContainer = document.createElement('div');
+            this.hintStackContainer.classList.add('hintContainer');
+            element.appendChild(codeContainer);
+            element.appendChild(this.hintStackContainer);
+
+            this.progremCodeLines.map(elt => { codeContainer.appendChild(elt) });
         }
+    }
+
+    clear(): void {
+        this.colorMap = new Map();
+        if (this.hintStackContainer)
+            this.hintStackContainer.innerHTML = "";
+        this.mapping.forEach((elt, node) => elt.classList.remove('highlight'));
+    }
+
+    private colorMap: Map<string, number> = new Map();
+
+    private hslColor(hue: number): string {
+        return 'hsl(' + hue + ', 100%, 80%)';
+    }
+
+    private hashStringToColor(key: string) {
+        let shift = 2;
+        let colorCount = 12;
+
+        var hue = this.colorMap.get(key);
+        if (hue) return this.hslColor(hue);
+
+        var hash = md5Create().update(key).toString();
+        
+        hue = ( parseInt(hash.substring(shift + 0, shift + 1), 16) + 16 * parseInt(hash.substring(shift + 1, shift + 2), 16) + 256 * parseInt(hash.substring(shift + 2, shift + 3), 16) );
+        hue = Math.floor(hue % colorCount) * 360 / colorCount;
+
+        while (!this.colorMap.get(key)) {
+            let duplicateColor = false;
+            for (let c of this.colorMap.values()) {
+                if (c === hue) {
+                    duplicateColor = true;
+                    hue += Math.floor(360 / colorCount);
+                    break;
+                }
+            }
+            if (!duplicateColor) {
+                this.colorMap.set(key, hue);
+            }
+        }
+        
+        //var pastel = 'hsl(' + hue + ', 100%, 87.5%)';
+        return this.hslColor(hue);
     }
 
     public fireCodeExecution(state: ProgremState) {
         if (state.codeStatement === null) {
             throw new Error('Received a null statement !');
         }
-        
-        this.mapping.forEach((node, elt) => elt.classList.remove('highlight'));
+
+        this.mapping.forEach((elt, node) => elt.classList.remove('highlight'));
 
         let executedNode = state.codeStatement.node;
-        let htmlNode = this.mapping.getValue(executedNode);
+        let htmlNode = this.mapping.get(executedNode);
         if (!htmlNode) {
             throw new Error('Unable to found a HTML element mapped for received statement !')
         }
         htmlNode.classList.add('highlight');
+
+        if (this.hintStackContainer) {
+            let node = AstHelper.reduceNodeToVarDeclaration(executedNode);
+            if (node) {
+                if (node.type === 'VariableDeclaration') {
+                    let decl = node as VariableDeclaration;
+                    
+                    decl.declarations.map(d => {
+                        //@ts-ignore
+                        let hint = this.appendHint(this.hintStackContainer, []);
+                        let varName = AstHelper.patternToString(d.id);
+                        let varValue = undefined;
+                        if (d.init) {
+                            varValue = state.evalScope.globalEval(escodeGenerate(d.init));
+                        }
+                        hint.innerHTML = varName + ' = ' + varValue;
+                        hint.style.backgroundColor = this.hashStringToColor(varName);
+
+                        let pElt = this.mapping.get(d);
+                        if (pElt) pElt.style.backgroundColor = this.hashStringToColor(varName);
+                    });
+                } else if (node.type === 'AssignmentExpression') {
+                    let decl = node as AssignmentExpression;
+
+                    //@ts-ignore
+                    let hint = this.appendHint(this.hintStackContainer, []);
+                    let varName = AstHelper.patternToString(decl.left);
+                    hint.innerHTML = varName + ' = ' + state.evalScope.globalEval(varName);
+                    hint.style.backgroundColor = this.hashStringToColor(varName);
+
+                    let pElt = this.mapping.get(decl);
+                    if (pElt) pElt.style.backgroundColor = this.hashStringToColor(varName);
+                } else if (node.type === 'FunctionDeclaration') {
+                    let func = node as FunctionDeclaration;
+
+                    func.params.forEach(p => {
+                        let varName = AstHelper.patternToString(p);
+                        let varValue = state.evalScope.globalEval(varName);
+                        //@ts-ignore
+                        let hint = this.appendHint(this.hintStackContainer, []);
+                        hint.innerHTML = varName + ' = ' + varValue;
+                        hint.style.backgroundColor = this.hashStringToColor(varName);
+
+                        let pElt = this.mapping.get(p);
+                        if (pElt) pElt.style.backgroundColor = this.hashStringToColor(varName);
+                    });
+                }
+            }
+        }
+
+    }
+
+    public fireGridChange(state: ProgremState) {
+        this.clear();
     }
 
     private appendCodeLine(parent: HTMLElement, padding: number): HTMLElement {
@@ -55,128 +163,148 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
         return elt;
     }
 
-    private appendSpan(parent: HTMLElement, htmlClass: string[]): HTMLElement {
+    private appendSpan(parent: HTMLElement, htmlClass: string[], text = ""): HTMLElement {
         let elt = document.createElement("span");
         htmlClass.forEach(c => elt.classList.add(c));
         parent.appendChild(elt);
-
+        elt.innerText = text;
         return elt;
+    }
+
+    private appendHint(parent: HTMLElement, htmlClass: string[]): HTMLElement {
+        let pre = document.createElement("pre");
+        let span = document.createElement("span");
+        htmlClass.forEach(c => pre.classList.add(c));
+        parent.appendChild(pre);
+        pre.appendChild(span);
+        return span;
     }
 
     // Build HTML Inspector by crawling recursively AST stacks
     private unstackAst(parentElement: HTMLElement, stack: BaseNode[], padding: number): void {
-        stack.forEach( node => {
-            if (! node) throw new Error('Should not be able to shift a null node !');
+        stack.forEach(node => {
+            if (!node) throw new Error('Should not be able to shift a null node !');
 
+            let line, startLine: HTMLElement, endLine, n, varSpan, leftSpan, rightSpan;
             switch (node.type) {
                 case 'BlockStatement':
-                    let block = node as BlockStatement;
-                    this.unstackAst(parentElement, block.body, padding + 1);
+                    n = node as BlockStatement;
+                    this.unstackAst(parentElement, n.body, padding + 1);
                     break;
 
                 case 'FunctionDeclaration':
-                    let func = node as FunctionDeclaration;
-                    let startLine = this.appendCodeLine(parentElement, padding);
-                    if (func.id) {
-                        startLine.innerHTML = 'function ' + func.id.name + ' () {';// + func.params.map(x => x.name).join(', ') + ' ) {';
+                    n = node as FunctionDeclaration;
+                    startLine = this.appendCodeLine(parentElement, padding);
+                    this.mapping.set(node, startLine);
+                    if (n.id) {
+                        let span = this.appendSpan(startLine, []);
+                        span.innerHTML = 'function ' + n.id.name + ' ( ';// + func.params.map(x => x.name).join(', ') + ' ) {';
                     } else {
-                        startLine.innerHTML = 'function () {';// + func.params.map(x => x.name).join(', ') + ' ) {';
+                        let span = this.appendSpan(startLine, []);
+                        span.innerHTML = 'function ( ';// + func.params.map(x => x.name).join(', ') + ' ) {';
                     }
 
-                    this.unstackAst(parentElement, func.body.body, padding + 1);
+                    let paramCount = n.params.length;
+                    n.params.forEach((param, i) => {
+                        let varName = AstHelper.patternToString(param);
+                        let span = this.appendSpan(startLine, ['varId'], varName);
+                        this.mapping.set(param, span);
+                        if (i < paramCount - 1) {
+                            let span = this.appendSpan(startLine, []);
+                            span.innerHTML = ', ';
+                        }
+                    });
 
-                    let endLine = this.appendCodeLine(parentElement, padding);
-                    endLine.innerHTML = '}';
-                    break;
+                    let span = this.appendSpan(startLine, []);
+                    span.innerHTML += ' ) {';
 
-                case 'IfStatement':
-                    let ifstmt = node as IfStatement;
-                    startLine = this.appendCodeLine(parentElement, padding);
-                    this.mapping.setValue(ifstmt.test, startLine);
-                    //startLine.innerHTML = 'if ( <span>' + Escodegen.generate(ifstmt.test) + '</span> ) {';
-                    startLine.innerHTML = 'if ( ';
-                    this.unstackAst(startLine, [ifstmt.test], 0);
-                    startLine.innerHTML += ' ) {';
-
-                    this.unstackAst(parentElement, [ifstmt.consequent], padding);
-
-                    let midLine = this.appendCodeLine(parentElement, padding);
-                    
-                    if (ifstmt.alternate) {
-                        midLine.innerHTML = '} else {';
-                        this.unstackAst(parentElement, [ifstmt.alternate], padding);
-                    } 
+                    this.unstackAst(parentElement, n.body.body, padding + 1);
 
                     endLine = this.appendCodeLine(parentElement, padding);
                     endLine.innerHTML = '}';
                     break;
-                
+
+                case 'IfStatement':
+                    n = node as IfStatement;
+                    startLine = this.appendCodeLine(parentElement, padding);
+                    this.mapping.set(n.test, startLine);
+                    //startLine.innerHTML = 'if ( <span>' + Escodegen.generate(ifstmt.test) + '</span> ) {';
+                    startLine.innerHTML = 'if ( ';
+                    this.unstackAst(startLine, [n.test], 0);
+                    startLine.innerHTML += ' ) {';
+
+                    this.unstackAst(parentElement, [n.consequent], padding);
+
+                    let midLine = this.appendCodeLine(parentElement, padding);
+
+                    if (n.alternate) {
+                        midLine.innerHTML = '} else {';
+                        this.unstackAst(parentElement, [n.alternate], padding);
+                    }
+
+                    endLine = this.appendCodeLine(parentElement, padding);
+                    endLine.innerHTML = '}';
+                    break;
+
                 case 'VariableDeclaration':
-                    let declaration = node as VariableDeclaration;
-                    let line = this.appendCodeLine(parentElement, padding);
-                    this.mapping.setValue(node, line);
-                    line.innerHTML = declaration.kind + ' ';
-                    this.unstackAst(line, declaration.declarations, 0);
+                    n = node as VariableDeclaration;
+                    line = this.appendCodeLine(parentElement, padding);
+                    this.mapping.set(node, line);
+                    line.innerHTML = n.kind + ' ';
+                    this.unstackAst(line, n.declarations, 0);
                     break;
 
                 case 'VariableDeclarator':
-                    let declarator = node as VariableDeclarator;
-                    
-                    let varSpan = this.appendSpan(parentElement, ['varId']);
-                    switch (declarator.id.type) {
-                        case 'Identifier':
-                            varSpan.innerHTML = declarator.id.name;
-                            if (declarator.init) {
-                                parentElement.innerHTML += ' = ';
-                                let initSpan = this.appendSpan(parentElement, ['varInit']);
-                                //let init = Escodegen.generate(declarator.init);
-                                this.unstackAst(initSpan, [declarator.init], 0);
-                            }
-                            parentElement.innerHTML += ';';
-                            break;
+                    n = node as VariableDeclarator;
+                    varSpan = this.appendSpan(parentElement, ['varId']);
+                    this.mapping.set(node, varSpan);
+                    varSpan.innerHTML = AstHelper.patternToString(n.id);
+                    if (n.init) {
+                        this.appendSpan(parentElement, [], ' = ');
+                        let initSpan = this.appendSpan(parentElement, ['varInit']);
+                        this.unstackAst(initSpan, [n.init], 0);
                     }
+                    this.appendSpan(parentElement, [], ';');
                     break;
 
                 case 'AssignmentExpression':
-                    let assign = node as AssignmentExpression;
-                    let leftSpan = this.appendSpan(parentElement, ['varId']);
-                    this.unstackAst(leftSpan, [assign.left], 0);
-                    parentElement.innerHTML += ' = ';
-                    let rightSpan = this.appendSpan(parentElement, ['varInit']);
-                    this.unstackAst(rightSpan, [assign.right], 0);
-                    parentElement.innerHTML += ';';
+                    n = node as AssignmentExpression;
+                    leftSpan = this.appendSpan(parentElement, ['varId']);
+                    this.mapping.set(node, leftSpan);
+                    this.unstackAst(leftSpan, [n.left], 0);
+                    this.appendSpan(parentElement, [], ' = ');
+                    rightSpan = this.appendSpan(parentElement, ['varInit']);
+                    this.unstackAst(rightSpan, [n.right], 0);
+                    this.appendSpan(parentElement, [], ';');
                     break;
 
                 case 'BinaryExpression':
-                    let bin = node as BinaryExpression;
+                    n = node as BinaryExpression;
                     leftSpan = this.appendSpan(parentElement, ['leftBin']);
-                    this.unstackAst(leftSpan, [bin.left], 0);
-                    parentElement.innerHTML += ' ';
-                    parentElement.innerHTML += bin.operator;
-                    parentElement.innerHTML += ' ';
+                    this.unstackAst(leftSpan, [n.left], 0);
+                    this.appendSpan(parentElement, [], ' ' + n.operator + ' ');
                     rightSpan = this.appendSpan(parentElement, ['rightBin']);
-                    this.unstackAst(rightSpan, [bin.right], 0);
+                    this.unstackAst(rightSpan, [n.right], 0);
                     break;
-        
+
                 case 'ExpressionStatement':
-                    let expr = node as ExpressionStatement;
+                    n = node as ExpressionStatement;
                     line = this.appendCodeLine(parentElement, padding);
-                    this.mapping.setValue(node, line);
-                    this.unstackAst(line, [expr.expression], 0);
+                    this.mapping.set(node, line);
+                    this.unstackAst(line, [n.expression], 0);
                     break;
 
                 case 'ReturnStatement':
+                    n = node as ReturnStatement
                     line = this.appendCodeLine(parentElement, padding);
-                    line.innerHTML = Escodegen.generate(node);
-                    this.mapping.setValue(node, line);
+                    this.mapping.set(node, line);
+                    line.innerHTML = escodeGenerate(node);
                     break;
-        
+
                 default:
                     console.log('default:', node);
-                    line = this.appendSpan(parentElement, []);
-                    line.textContent = Escodegen.generate(node);
-                    line.classList.add('nsy-' + node.type);
-                    this.mapping.setValue(node, line);
+                    line = this.appendSpan(parentElement, ['nsy-' + node.type], escodeGenerate(node));
+                    this.mapping.set(node, line);
                     break;
             }
         });
@@ -194,21 +322,21 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
         let padding = 0;
 
         //this.progremCode.colorerProgremFunction().body.body.map(n => stack.push(n));
-        
+
         do {
             let node = stack.shift();
-            if (! node) throw new Error('Should not be able to shift a null node !');
+            if (!node) throw new Error('Should not be able to shift a null node !');
             var line;
 
             switch (node.type) {
                 case 'BlockStatement':
                     let block = node as BlockStatement;
-                    padding ++
+                    padding++
                     block.body.slice(0).reverse().map(x => stack.unshift(x));
                     break;
                 case 'EndBlockStatement':
                     // This is a hack to close an opened block
-                    padding --;
+                    padding--;
                     line = this.appendCodeLine(codeRoot, padding);
                     line.innerHTML = '}';
                     break;
@@ -220,41 +348,37 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
                     } else {
                         line.innerHTML = 'function () {';// + func.params.map(x => x.name).join(', ') + ' ) {';
                     }
-                    stack.unshift({type: 'EndBlockStatement'}); // Hack to delay a block end
+                    stack.unshift({ type: 'EndBlockStatement' }); // Hack to delay a block end
                     stack.unshift(func.body);
                     break;
                 case 'IfStatement':
                     let ifstmt = node as IfStatement;
                     line = this.appendCodeLine(codeRoot, padding);
-                    line.innerHTML = 'if ( <span>' + Escodegen.generate(ifstmt.test) + '</span> ) {';
-                    this.mapping.setValue(ifstmt.test, line);
-    
+                    line.innerHTML = 'if ( <span>' + escodeGenerate(ifstmt.test) + '</span> ) {';
+                    this.mapping.set(ifstmt.test, line);
+
                     if (ifstmt.alternate) {
-                        stack.unshift({type: 'EndBlockStatement'}); // Hack to delay a block end
+                        stack.unshift({ type: 'EndBlockStatement' }); // Hack to delay a block end
                         stack.unshift(ifstmt.alternate);
                     }
-                    stack.unshift({type: 'ElseBlockStatement'}); // Hack to delay an else block
+                    stack.unshift({ type: 'ElseBlockStatement' }); // Hack to delay an else block
                     stack.unshift(ifstmt.consequent);
                     break;
                 case 'ElseBlockStatement':
                     // This is a hack to close an opened block
-                    padding --;
+                    padding--;
                     line = this.appendCodeLine(codeRoot, padding);
                     line.innerHTML = '} else {';
                     break;
                 default:
                     line = this.appendCodeLine(codeRoot, padding);
-                    line.textContent = Escodegen.generate(node);
+                    line.textContent = escodeGenerate(node);
                     line.classList.add('statement');
-                    this.mapping.setValue(node, line);
+                    this.mapping.set(node, line);
                     break;
             }
-        
+
         } while (stack.length > 0);
     }
-
-    clear(): void {
-        throw new Error("Method not implemented.");
-    }    
 
 }

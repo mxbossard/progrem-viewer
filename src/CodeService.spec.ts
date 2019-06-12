@@ -1,6 +1,6 @@
 import 'jasmine';
 //import 'jasmine-ajax';
-import * as Escodegen from 'escodegen';
+import { generate as escodegenerate } from 'escodegen';
 import { CodeService } from './CodeService';
 import { ProgremState } from './SchedulingService';
 //import { ProgremCodeFactory } from './CodeService';
@@ -107,7 +107,7 @@ describe('BasicEsprimaCodeIterator', () => {
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         let statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('var a = 1;');
+        expect(escodegenerate(statement.node)).toBe('var a = 1;');
 
         expect(codeIterator.hasNext()).toBeFalsy('hasNext() should return false');
     });
@@ -120,19 +120,19 @@ describe('BasicEsprimaCodeIterator', () => {
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         let statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('var a = 1;');
+        expect(escodegenerate(statement.node)).toBe('var a = 1;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('var b = 2;');
+        expect(escodegenerate(statement.node)).toBe('var b = 2;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('var c = a + b;');
+        expect(escodegenerate(statement.node)).toBe('var c = a + b;');
         
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('return c;');
+        expect(escodegenerate(statement.node)).toBe('return c;');
 
         expect(codeIterator.hasNext()).toBeFalsy('hasNext() should return false');
     });
@@ -145,27 +145,27 @@ describe('BasicEsprimaCodeIterator', () => {
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         let statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('var c = 3;');
+        expect(escodegenerate(statement.node)).toBe('var c = 3;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('var d;');
+        expect(escodegenerate(statement.node)).toBe('var d;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('c < 3');
+        expect(escodegenerate(statement.node)).toBe('c < 3');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('c = 0;');
+        expect(escodegenerate(statement.node)).toBe('c = 0;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('d = 1;');
+        expect(escodegenerate(statement.node)).toBe('d = 1;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('return d;');
+        expect(escodegenerate(statement.node)).toBe('return d;');
 
         expect(codeIterator.hasNext()).toBeFalsy('hasNext() should return false');
     });
@@ -178,15 +178,15 @@ describe('BasicEsprimaCodeIterator', () => {
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         let statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('var c = 3;');
+        expect(escodegenerate(statement.node)).toBe('var c = 3;');
         
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('c < 3');
+        expect(escodegenerate(statement.node)).toBe('c < 3');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(Escodegen.generate(statement.node)).toBe('return 1;');
+        expect(escodegenerate(statement.node)).toBe('return 1;');
 
         expect(codeIterator.hasNext()).toBeFalsy('hasNext() should return false');
     });

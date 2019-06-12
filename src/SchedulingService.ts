@@ -21,7 +21,7 @@ export class ProgremState {
 
 type NewStateCallback = (state: ProgremState) => void;
 export interface CodeExecutionListener {fireCodeExecution: NewStateCallback};
-export interface GridChangeListener {fireBoxChange: NewStateCallback};
+export interface GridChangeListener {fireGridChange: NewStateCallback};
 export interface LineChangeListener {fireLineChange: NewStateCallback};
 export interface FrameChangeListener {fireFrameChange: NewStateCallback};
 
@@ -130,7 +130,7 @@ class SimpleProgremScheduler implements ProgremScheduler {
         let newState = new ProgremState(_colonne, _ligne, _frame, this.state.contexte, null);
  
         if (notifyPixelChange) {
-            this.gridChangeListeners.map(l => l.fireBoxChange(this.state));
+            this.gridChangeListeners.map(l => l.fireGridChange(this.state));
         }
 
         if (notifyLineChange) {

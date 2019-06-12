@@ -4,6 +4,10 @@ module.exports = {
   entry: './src/index.ts',
   devtool: 'inline-source-map',
   watch: true,
+  mode: 'development',
+  optimization: {
+    usedExports: true,
+  },
   module: {
     rules: [
       {

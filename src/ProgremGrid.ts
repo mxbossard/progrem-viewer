@@ -70,7 +70,7 @@ export class BasicCanvasProgremGrid implements ProgremGrid, GridChangeListener {
         }
     }
     
-    fireBoxChange (state: ProgremState): void {
+    fireGridChange (state: ProgremState): void {
         console.log('grid change: ', state);
 
         let boxSize = this.screenConfig.boxSize;

@@ -1,4 +1,4 @@
-import * as Escodegen from 'escodegen';
+import { generate as escodeGenerate } from 'escodegen';
 import { CodeService } from "./CodeService";
 import { SchedulingService, ProgremScheduler } from './SchedulingService';
 import { BasicHtmlEsprimaProgremInspector } from './ProgremInspector';
@@ -31,7 +31,7 @@ export namespace ProgremService {
             console.log('progrem AST:', progremCode.colorerProgremFunction);
 
             // Load initProgrem Function code
-            let initProgremFunctionCode = Escodegen.generate(progremCode.initialiserProgremFunction());
+            let initProgremFunctionCode = escodeGenerate(progremCode.initialiserProgremFunction());
             (window as any).eval(initProgremFunctionCode);
 
             scheduler = SchedulingService.buildProgremScheduler(progremConfig, progremCode);
