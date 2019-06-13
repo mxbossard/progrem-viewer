@@ -4,18 +4,21 @@ import { ProgremCode } from "./CodeService";
 import { FunctionDeclaration, BaseNode, BlockStatement, IfStatement, Expression, VariableDeclaration, VariableDeclarator, ExpressionStatement, AssignmentExpression, ReturnStatement, ConditionalExpression, BinaryExpression } from 'estree';
 import { ProgremScheduler, ProgremState, CodeExecutionListener, GridChangeListener } from './SchedulingService';
 import { AstHelper } from './AstHelper';
+import { BasicEsToHtmlTreeStore, CodeSpoolerEsToHtmlTreeMapperFactory, EsToHtmlTreeStore } from './HtmlTree';
 
 export interface ProgremInspector {
     clear(): void;
-    attach(element: Element | null): void
+    attach(element: HTMLElement | null): void
 }
 
 export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeExecutionListener, GridChangeListener {
     
     private progremCodeLines: HTMLElement[] = [];
-    private attachedElement: Element | null = null;
+    private attachedElement: HTMLElement | null = null;
     private mapping: Map<BaseNode, HTMLElement> = new Map();
     private hintStackContainer: HTMLElement | null = null;
+
+    private treeStore1: EsToHtmlTreeStore;
 
     constructor(
         private progremCode: ProgremCode,
@@ -23,10 +26,11 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
     ) {
         scheduler.subscribeCodeExecution(this);
         scheduler.subscribeGridChange(this);
-        this.buildHtmlTree2();
+        //this.buildHtmlTree2();
+        this.treeStore1 = this.buildHtmlTree3();
     }
 
-    attach(element: Element | null): void {
+    attach0(element: HTMLElement | null): void {
         this.attachedElement = element;
 
         if (element) {
@@ -41,11 +45,27 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
         }
     }
 
-    clear(): void {
+    attach(element: HTMLElement | null): void {
+        this.attachedElement = element;
+
+        if (element) {
+            this.treeStore1.paintInto(element);
+        }
+    }
+
+    clear0(): void {
         this.colorMap = new Map();
         if (this.hintStackContainer)
             this.hintStackContainer.innerHTML = "";
         this.mapping.forEach((elt, node) => elt.classList.remove('highlight'));
+    }
+
+    clear(): void {
+        this.colorMap = new Map();
+        this.treeStore1.resetStyle();
+        if (this.hintStackContainer) {
+            this.hintStackContainer.innerHTML = "";
+        }
     }
 
     private colorMap: Map<string, number> = new Map();
@@ -89,14 +109,16 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
             throw new Error('Received a null statement !');
         }
 
-        this.mapping.forEach((elt, node) => elt.classList.remove('highlight'));
+        //this.mapping.forEach((elt, node) => elt.classList.remove('highlight'));
+        this.treeStore1.removeStyleClasses(['highlight']);
 
         let executedNode = state.codeStatement.node;
-        let htmlNode = this.mapping.get(executedNode);
-        if (!htmlNode) {
-            throw new Error('Unable to found a HTML element mapped for received statement !')
-        }
-        htmlNode.classList.add('highlight');
+        //let htmlNode = this.mapping.get(executedNode);
+        //if (!htmlNode) {
+        //    throw new Error('Unable to found a HTML element mapped for received statement !')
+        //}
+        //htmlNode.classList.add('highlight');
+        this.treeStore1.addStyleClasses(executedNode, ['highlight']);
 
         if (this.hintStackContainer) {
             let node = AstHelper.reduceNodeToVarDeclaration(executedNode);
@@ -115,8 +137,9 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
                         hint.innerHTML = varName + ' = ' + varValue;
                         hint.style.backgroundColor = this.hashStringToColor(varName);
 
-                        let pElt = this.mapping.get(d);
-                        if (pElt) pElt.style.backgroundColor = this.hashStringToColor(varName);
+                        //let pElt = this.mapping.get(d);
+                        //if (pElt) pElt.style.backgroundColor = this.hashStringToColor(varName);
+                        this.treeStore1.setStyleProperty(d, 'backgroundColor', this.hashStringToColor(varName));
                     });
                 } else if (node.type === 'AssignmentExpression') {
                     let decl = node as AssignmentExpression;
@@ -127,8 +150,9 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
                     hint.innerHTML = varName + ' = ' + state.evalScope.globalEval(varName);
                     hint.style.backgroundColor = this.hashStringToColor(varName);
 
-                    let pElt = this.mapping.get(decl);
-                    if (pElt) pElt.style.backgroundColor = this.hashStringToColor(varName);
+                    //let pElt = this.mapping.get(decl);
+                    //if (pElt) pElt.style.backgroundColor = this.hashStringToColor(varName);
+                    this.treeStore1.setStyleProperty(decl, 'backgroundColor', this.hashStringToColor(varName));
                 } else if (node.type === 'FunctionDeclaration') {
                     let func = node as FunctionDeclaration;
 
@@ -140,8 +164,9 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
                         hint.innerHTML = varName + ' = ' + varValue;
                         hint.style.backgroundColor = this.hashStringToColor(varName);
 
-                        let pElt = this.mapping.get(p);
-                        if (pElt) pElt.style.backgroundColor = this.hashStringToColor(varName);
+                        //let pElt = this.mapping.get(p);
+                        //if (pElt) pElt.style.backgroundColor = this.hashStringToColor(varName);
+                        this.treeStore1.setStyleProperty(p, 'backgroundColor', this.hashStringToColor(varName));
                     });
                 }
             }
@@ -312,6 +337,18 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
         const codeRoot = document.createElement("div");
         this.progremCodeLines.push(codeRoot);
         this.unstackAst(codeRoot, [this.progremCode.colorerProgremFunction()], 0);
+    }
+
+    private buildHtmlTree3(): EsToHtmlTreeStore {
+        const codeRoot = document.createElement("div");
+        this.progremCodeLines.push(codeRoot);
+        
+        let factory = new CodeSpoolerEsToHtmlTreeMapperFactory();
+        let treeStore = factory.build(this.progremCode);
+
+        treeStore.paintInto(codeRoot);
+
+        return treeStore;
     }
 
     private buildHtmlTree() {
