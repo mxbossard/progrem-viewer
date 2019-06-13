@@ -1,0 +1,108 @@
+<html lang="FR" >
+<head>
+    <meta charset="UTF-8"> 
+    <style>
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            padding: 0;
+            text-align: center;
+        }
+
+        div.code {
+            display: grid;
+        }
+
+        .codeContainer {
+            grid-column-start: 1;
+            grid-column-end: 4;
+            grid-row: 1;
+            padding: 0;
+            overflow: hidden;
+            text-align: left;
+            font-size: 1.2em;
+        }
+
+        .hintContainer {
+            grid-column-start: 5;
+            grid-column-end: 6;
+            grid-row: 1;
+            padding: 0;
+            overflow: hidden;
+            text-align: left;
+            font-size: 1.2em;
+            max-width: 400px;
+        }
+
+        .codeContainer pre, .hintContainer pre {
+            margin: 10px;
+        }
+
+        .codeContainer pre span {
+            padding: 0.2em 0;
+        }
+
+        .hintContainer pre span {
+            padding: 0.2em 0.5em;
+        }
+
+        .codeContainer pre span.varId {
+            padding-left: 0.5em;
+            padding-right: 0.5em;
+        }
+
+        .codeContainer pre::before {
+            content: "    ";
+        }
+
+        .codeContainer .highlight {
+            /* background-color: orange; */
+        }
+
+        .codeContainer .highlight::before {
+            content: " => ";
+            color: orangered;
+            background-color: chartreuse;
+            font-weight: bolder;
+        }
+
+        .codeContainer .padding-1 {
+            padding-left: 3em;
+        }
+
+        .codeContainer .padding-2 {
+            padding-left: 6em;
+        }
+
+        .codeContainer .padding-3 {
+            padding-left: 9em;
+        }
+
+      </style>
+</head>
+
+<body>
+    <h1 class="titre"></h1>
+
+    <canvas class="progrem">
+        <p>Your browser doesn't support canvas.</p>
+        <p>Votre navigateur ne supporte pas les canvas.</p>
+    </canvas>
+
+    <br/><br/>
+
+    <select class="peinture">
+        <option value="instruction">Peinture par instruction</option>
+        <option value="pixel" selected="selected">Peinture par pixel</option>
+        <option value="ligne">Peinture par ligne</option>
+        <option value="image">Peinture par image</option>
+    </select>
+
+    <button class="peindre">Repeindre</button>
+
+    <br/><br/>
+
+    <div class="code"></div>
+    
+<script type="text/javascript" src="runtime.bundle.js"></script><script type="text/javascript" src="npm.escodegen.bundle.js"></script><script type="text/javascript" src="npm.esutils.bundle.js"></script><script type="text/javascript" src="npm.estraverse.bundle.js"></script><script type="text/javascript" src="npm.webpack.bundle.js"></script><script type="text/javascript" src="npm.esprima-walk.bundle.js"></script><script type="text/javascript" src="npm.esprima.bundle.js"></script><script type="text/javascript" src="npm.js-md5.bundle.js"></script><script type="text/javascript" src="npm.process.bundle.js"></script><script type="text/javascript" src="index.bundle.js"></script></body>
+</html>

@@ -2,10 +2,8 @@ import { generate as escodeGenerate } from 'escodegen';
 import { create as md5Create } from 'js-md5';
 import { ProgremCode } from "./CodeService";
 import { FunctionDeclaration, BaseNode, BlockStatement, IfStatement, Expression, VariableDeclaration, VariableDeclarator, ExpressionStatement, AssignmentExpression, ReturnStatement, ConditionalExpression, BinaryExpression } from 'estree';
-//import { Dictionary } from 'typescript-collections';
 import { ProgremScheduler, ProgremState, CodeExecutionListener, GridChangeListener } from './SchedulingService';
 import { AstHelper } from './AstHelper';
-
 
 export interface ProgremInspector {
     clear(): void;
@@ -13,7 +11,7 @@ export interface ProgremInspector {
 }
 
 export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeExecutionListener, GridChangeListener {
-
+    
     private progremCodeLines: HTMLElement[] = [];
     private attachedElement: Element | null = null;
     private mapping: Map<BaseNode, HTMLElement> = new Map();

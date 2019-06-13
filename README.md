@@ -1,6 +1,6 @@
 # progrem-viewer
 
-Demo du viewer de la branche master ici : https://raw.githack.com/mxbossard/progrem-viewer/master/dist/coeur_progrem.html
+Demo du viewer de la branche master ici : https://raw.githack.com/mxbossard/progrem-viewer/master/dist/index.html
 
 ## Modules / Composants
 
