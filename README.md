@@ -31,7 +31,7 @@ styleClasses(): string[]
 addStyleClasses(BaseNode, string[]): void
 resetStyle(): void
 
-### HtmlTreeBuilder
+### HtmlTreeFactory
 Responsable de la construction d'arbre HTML pour l'affichage.
 build(ProgremCode): HtmlTree
 

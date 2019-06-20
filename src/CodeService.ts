@@ -33,20 +33,21 @@ class BasicEsprimaCodeStatementFactory implements CodeStatementFactory<Statement
         /*
         if (param.type === 'ReturnStatement') {
             let stmt = param as ReturnStatement;
-            let code = Escodegen.generate(stmt);
-            return new CodeStatement(code);
+            let code = escodeGenerate(stmt);
+            return new CodeStatement(param, code);
         } else if (param.type === 'IfStatement') {
             let stmt = param as IfStatement;
-            let code = Escodegen.generate(stmt.test);
-            return new CodeStatement(code);
+            let code = escodeGenerate(stmt.test);
+            return new CodeStatement(param, code);
         } else {
-            let code = Escodegen.generate(param);
-            return new CodeStatement(code);
-        }*/
-
+            let code = escodeGenerate(param);
+            return new CodeStatement(param, code);
+        }
+        */
+        
         if (param) 
             return new CodeStatement(param);
-
+        
         throw new Error('Unable to build non statement code !');
     }
 }

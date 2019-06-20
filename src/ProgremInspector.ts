@@ -4,7 +4,7 @@ import { ProgremCode } from "./CodeService";
 import { FunctionDeclaration, BaseNode, BlockStatement, IfStatement, Expression, VariableDeclaration, VariableDeclarator, ExpressionStatement, AssignmentExpression, ReturnStatement, ConditionalExpression, BinaryExpression } from 'estree';
 import { ProgremScheduler, ProgremState, CodeExecutionListener, GridChangeListener } from './SchedulingService';
 import { AstHelper } from './AstHelper';
-import { BasicEsToHtmlTreeStore, CodeSpoolerEsToHtmlTreeMapperFactory, EsToHtmlTreeStore } from './HtmlTree';
+import { FunctionDeclarationToHtmlTreeStore, CodeSpoolerEsToHtmlTreeMapperFactory, EsToHtmlTreeStore } from './HtmlTree';
 
 export interface ProgremInspector {
     clear(): void;
@@ -22,7 +22,8 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
 
     constructor(
         private progremCode: ProgremCode,
-        private scheduler: ProgremScheduler
+        private scheduler: ProgremScheduler,
+        private _document: Document
     ) {
         scheduler.subscribeCodeExecution(this);
         scheduler.subscribeGridChange(this);
@@ -45,7 +46,7 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
         }
     }
 
-    attach(element: HTMLElement | null): void {
+    attach(element: HTMLElement): void {
         this.attachedElement = element;
 
         if (element) {
@@ -343,7 +344,7 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
         const codeRoot = document.createElement("div");
         this.progremCodeLines.push(codeRoot);
         
-        let factory = new CodeSpoolerEsToHtmlTreeMapperFactory();
+        let factory = new CodeSpoolerEsToHtmlTreeMapperFactory(this._document);
         let treeStore = factory.build(this.progremCode);
 
         treeStore.paintInto(codeRoot);

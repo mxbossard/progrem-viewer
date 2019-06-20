@@ -36,11 +36,13 @@ export namespace ProgremService {
 
             scheduler = SchedulingService.buildProgremScheduler(progremConfig, progremCode);
 
-            let progremInspector = new BasicHtmlEsprimaProgremInspector(progremCode, scheduler);
+            let progremInspector = new BasicHtmlEsprimaProgremInspector(progremCode, scheduler, document);
 
-            let codeElement = document.querySelector('.code');
-            console.log('codeElement', codeElement);
-            progremInspector.attach(codeElement);
+            let codeElement = document.querySelector<HTMLElement>('.code');
+            if (codeElement) {
+                console.log('codeElement', codeElement);
+                progremInspector.attach(codeElement);
+            }
             
             let gridElement = document.querySelector('.progrem');
             console.log('gridElement', gridElement);

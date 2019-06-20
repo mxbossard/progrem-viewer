@@ -20,32 +20,28 @@ export interface EsToHtmlFactory {
     build(node: BaseNode): Map<BaseNode, HTMLElement>;
 }
 
-export class BasicEsToHtmlTreeStore implements EsToHtmlTreeStore {
+export class FunctionDeclarationToHtmlTreeStore implements EsToHtmlTreeStore {
 
     private backingMap: Map<BaseNode, HTMLElement> = new Map();
     private addedClasses: Map<BaseNode, string[]> = new Map();
     private addedStyleProps: Map<BaseNode, string[]> = new Map();
 
-    constructor(private nodes: BaseNode[], private htmlFactory: EsToHtmlFactory) {
-        nodes.forEach(n => {
-            let mapping = htmlFactory.build(n);
-            let iterator = mapping.entries();
-            let entry = iterator.next();
-            while(!entry.done) {
-                let val = entry.value;
-                this.backingMap.set(val[0], val[1]);
-                entry = iterator.next();
-            }
-        })
+    constructor(private func: FunctionDeclaration, private htmlFactory: EsToHtmlFactory) {
+        let mapping = htmlFactory.build(func);
+        let iterator = mapping.entries();
+        let entry = iterator.next();
+        while(!entry.done) {
+            let val = entry.value;
+            this.backingMap.set(val[0], val[1]);
+            entry = iterator.next();
+        }
     }
 
     paintInto(element: HTMLElement): void {
-        this.nodes.forEach(n => {
-            let elt = this.backingMap.get(n);
-            if (elt) {
-                element.appendChild(elt);
-            }
-        })
+        let elt = this.backingMap.get(this.func);
+        if (elt) {
+            element.appendChild(elt);
+        }
     }    
     
     styleClasses(): string[] {
@@ -122,10 +118,12 @@ export class BasicEsToHtmlTreeStore implements EsToHtmlTreeStore {
 
 }
 
-export class CodeSpoolerEsToHtmlFactory implements EsToHtmlFactory {
+export class FunctionSpoolerEsToHtmlFactory implements EsToHtmlFactory {
+
+    constructor(private _document: Document) {}
 
     private appendCodeLine(parent: HTMLElement, padding: number): HTMLElement {
-        let elt = document.createElement("pre");
+        let elt = this._document.createElement("pre");
         elt.classList.add('padding-' + padding);
         parent.appendChild(elt);
 
@@ -133,7 +131,7 @@ export class CodeSpoolerEsToHtmlFactory implements EsToHtmlFactory {
     }
 
     private appendSpan(parent: HTMLElement, htmlClass: string[], text = ""): HTMLElement {
-        let elt = document.createElement("span");
+        let elt = this._document.createElement("span");
         htmlClass.forEach(c => elt.classList.add(c));
         parent.appendChild(elt);
         elt.innerText = text;
@@ -141,8 +139,8 @@ export class CodeSpoolerEsToHtmlFactory implements EsToHtmlFactory {
     }
 
     private appendHint(parent: HTMLElement, htmlClass: string[]): HTMLElement {
-        let pre = document.createElement("pre");
-        let span = document.createElement("span");
+        let pre = this._document.createElement("pre");
+        let span = this._document.createElement("span");
         htmlClass.forEach(c => pre.classList.add(c));
         parent.appendChild(pre);
         pre.appendChild(span);
@@ -164,7 +162,8 @@ export class CodeSpoolerEsToHtmlFactory implements EsToHtmlFactory {
                 case 'FunctionDeclaration':
                     n = node as FunctionDeclaration;
                     startLine = this.appendCodeLine(parentElement, padding);
-                    mapping.set(node, startLine);
+                    //mapping.set(node, startLine);
+                    mapping.set(node, parentElement); // Hack: map the function container to the container of the function 
                     if (n.id) {
                         let span = this.appendSpan(startLine, []);
                         span.innerHTML = 'function ' + n.id.name + ' ( ';// + func.params.map(x => x.name).join(', ') + ' ) {';
@@ -271,7 +270,7 @@ export class CodeSpoolerEsToHtmlFactory implements EsToHtmlFactory {
                     break;
 
                 default:
-                    console.log('default:', node);
+                    //console.log('default:', node);
                     line = this.appendSpan(parentElement, ['nsy-' + node.type], escodeGenerate(node));
                     mapping.set(node, line);
                     break;
@@ -279,11 +278,12 @@ export class CodeSpoolerEsToHtmlFactory implements EsToHtmlFactory {
         });
     }
 
-    build(node: BaseNode): Map<BaseNode, HTMLElement> {
-        const codeRoot = document.createElement("div");
+    build(node: FunctionDeclaration): Map<BaseNode, HTMLElement> {
+        const codeRoot = this._document.createElement('div');
+        codeRoot.classList.add('codeContainer');
         let mapping = new Map();
         this.unstackAst(codeRoot, [node], mapping, 0);
-        console.log('mapping:', mapping);
+        //console.log('mapping:', mapping);
         return mapping;
     }
     
@@ -291,10 +291,14 @@ export class CodeSpoolerEsToHtmlFactory implements EsToHtmlFactory {
 
 export class CodeSpoolerEsToHtmlTreeMapperFactory implements EsToHtmlTreeStoreFactory {
     
-    private htmlFactory = new CodeSpoolerEsToHtmlFactory();
+    private htmlFactory: EsToHtmlFactory;
+
+    constructor(_document: Document) {
+        this.htmlFactory = new FunctionSpoolerEsToHtmlFactory(_document);
+    }
 
     build(code: ProgremCode): EsToHtmlTreeStore {
-        let store = new BasicEsToHtmlTreeStore([code.colorerProgremFunction()], this.htmlFactory);
+        let store = new FunctionDeclarationToHtmlTreeStore(code.colorerProgremFunction(), this.htmlFactory);
         return store;
     }
     
