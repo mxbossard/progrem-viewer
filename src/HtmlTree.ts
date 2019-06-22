@@ -16,8 +16,8 @@ export interface EsToHtmlTreeStoreFactory {
     build(code: ProgremCode): EsToHtmlTreeStore
 }
 
-export interface EsToHtmlFactory {
-    build(node: BaseNode): Map<BaseNode, HTMLElement>;
+export interface EsToHtmlFactory<T extends BaseNode> {
+    build(node: T, container: HTMLElement[]): Map<BaseNode, HTMLElement>;
 }
 
 export class FunctionDeclarationToHtmlTreeStore implements EsToHtmlTreeStore {
@@ -25,9 +25,11 @@ export class FunctionDeclarationToHtmlTreeStore implements EsToHtmlTreeStore {
     private backingMap: Map<BaseNode, HTMLElement> = new Map();
     private addedClasses: Map<BaseNode, string[]> = new Map();
     private addedStyleProps: Map<BaseNode, string[]> = new Map();
+    private container: HTMLElement[];
 
-    constructor(private func: FunctionDeclaration, private htmlFactory: EsToHtmlFactory) {
-        let mapping = htmlFactory.build(func);
+    constructor(private func: FunctionDeclaration, private htmlFactory: EsToHtmlFactory<FunctionDeclaration>) {
+        this.container = [];
+        let mapping = htmlFactory.build(func, this.container);
         let iterator = mapping.entries();
         let entry = iterator.next();
         while(!entry.done) {
@@ -38,10 +40,9 @@ export class FunctionDeclarationToHtmlTreeStore implements EsToHtmlTreeStore {
     }
 
     paintInto(element: HTMLElement): void {
-        let elt = this.backingMap.get(this.func);
-        if (elt) {
-            element.appendChild(elt);
-        }
+        this.container.forEach(e => {
+            element.appendChild(e);
+        })
     }    
     
     styleClasses(): string[] {
@@ -118,7 +119,7 @@ export class FunctionDeclarationToHtmlTreeStore implements EsToHtmlTreeStore {
 
 }
 
-export class FunctionSpoolerEsToHtmlFactory implements EsToHtmlFactory {
+export class FunctionSpoolerEsToHtmlFactory implements EsToHtmlFactory<FunctionDeclaration> {
 
     constructor(private _document: Document) {}
 
@@ -162,8 +163,8 @@ export class FunctionSpoolerEsToHtmlFactory implements EsToHtmlFactory {
                 case 'FunctionDeclaration':
                     n = node as FunctionDeclaration;
                     startLine = this.appendCodeLine(parentElement, padding);
-                    //mapping.set(node, startLine);
-                    mapping.set(node, parentElement); // Hack: map the function container to the container of the function 
+                    mapping.set(node, startLine);
+                    //mapping.set(node, parentElement); // Hack: map the function container to the container of the function 
                     if (n.id) {
                         let span = this.appendSpan(startLine, []);
                         span.innerHTML = 'function ' + n.id.name + ' ( ';// + func.params.map(x => x.name).join(', ') + ' ) {';
@@ -278,12 +279,15 @@ export class FunctionSpoolerEsToHtmlFactory implements EsToHtmlFactory {
         });
     }
 
-    build(node: FunctionDeclaration): Map<BaseNode, HTMLElement> {
+    build(node: FunctionDeclaration, container: HTMLElement[]): Map<BaseNode, HTMLElement> {
         const codeRoot = this._document.createElement('div');
-        codeRoot.classList.add('codeContainer');
         let mapping = new Map();
         this.unstackAst(codeRoot, [node], mapping, 0);
         //console.log('mapping:', mapping);
+        let childIt = codeRoot.children;
+        for(let i=0; i < childIt.length; i++) {
+            container.push(<HTMLElement> childIt[i]);
+        }
         return mapping;
     }
     
@@ -291,9 +295,9 @@ export class FunctionSpoolerEsToHtmlFactory implements EsToHtmlFactory {
 
 export class CodeSpoolerEsToHtmlTreeMapperFactory implements EsToHtmlTreeStoreFactory {
     
-    private htmlFactory: EsToHtmlFactory;
+    private htmlFactory: EsToHtmlFactory<any>;
 
-    constructor(_document: Document) {
+    constructor(private _document: Document) {
         this.htmlFactory = new FunctionSpoolerEsToHtmlFactory(_document);
     }
 

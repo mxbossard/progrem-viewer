@@ -30,10 +30,7 @@ describe('BasicEsToHtmlTreeStore', () => {
         let box = document.createElement('div');
         treeStore.paintInto(box);
         
-        expect(box.children.length).toBe(1);
-        let codeContainer = box.children[0];
-        expect(codeContainer.children.length).toBe(6);
-
+        expect(box.children.length).toBe(6);
     });
 
 });
