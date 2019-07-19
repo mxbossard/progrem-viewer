@@ -52,12 +52,12 @@ describe('BasicEsprimaCodeIterator', () => {
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         let statement = codeIterator.executeNext();
-        expect(statement.node.type).toBe('FunctionDeclaration');
+        expect(statement.astRootNode.type).toBe('FunctionDeclaration');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(statement.node.type).toBe('VariableDeclaration');
-        expect(escodegenerate(statement.node)).toBe('var a = 1;');
+        expect(statement.astRootNode.type).toBe('VariableDeclaration');
+        expect(escodegenerate(statement.astRootNode)).toBe('var a = 1;');
         
 
         expect(codeIterator.hasNext()).toBeFalsy('hasNext() should return false');
@@ -86,12 +86,12 @@ describe('BasicEsprimaCodeIterator', () => {
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         let statement = codeIterator.executeNext();
-        expect(statement.node.type).toBe('FunctionDeclaration');
+        expect(statement.astRootNode.type).toBe('FunctionDeclaration');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(statement.node.type).toBe('VariableDeclaration');
-        expect(escodegenerate(statement.node)).toBe('var a = 1;');
+        expect(statement.astRootNode.type).toBe('VariableDeclaration');
+        expect(escodegenerate(statement.astRootNode)).toBe('var a = 1;');
 
         expect(codeIterator.hasNext()).toBeFalsy('hasNext() should return false');
     });
@@ -112,23 +112,23 @@ describe('BasicEsprimaCodeIterator', () => {
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         let statement = codeIterator.executeNext();
-        expect(statement.node.type).toBe('FunctionDeclaration');
+        expect(statement.astRootNode.type).toBe('FunctionDeclaration');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('var a = 1;');
+        expect(escodegenerate(statement.astRootNode)).toBe('var a = 1;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('var b = 2;');
+        expect(escodegenerate(statement.astRootNode)).toBe('var b = 2;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('var c = a + b;');
+        expect(escodegenerate(statement.astRootNode)).toBe('var c = a + b;');
         
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('return c;');
+        expect(escodegenerate(statement.astRootNode)).toBe('return c;');
 
         expect(codeIterator.hasNext()).toBeFalsy('hasNext() should return false');
     });
@@ -155,31 +155,31 @@ describe('BasicEsprimaCodeIterator', () => {
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         let statement = codeIterator.executeNext();
-        expect(statement.node.type).toBe('FunctionDeclaration');
+        expect(statement.astRootNode.type).toBe('FunctionDeclaration');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('var c = 3;');
+        expect(escodegenerate(statement.astRootNode)).toBe('var c = 3;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('var d;');
+        expect(escodegenerate(statement.astRootNode)).toBe('var d;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('c < 3');
+        expect(escodegenerate(statement.astRootNode)).toBe('c < 3');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('c = 0;');
+        expect(escodegenerate(statement.astRootNode)).toBe('c = 0;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('d = 1;');
+        expect(escodegenerate(statement.astRootNode)).toBe('d = 1;');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('return d;');
+        expect(escodegenerate(statement.astRootNode)).toBe('return d;');
 
         expect(codeIterator.hasNext()).toBeFalsy('hasNext() should return false');
     });
@@ -203,19 +203,19 @@ describe('BasicEsprimaCodeIterator', () => {
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         let statement = codeIterator.executeNext();
-        expect(statement.node.type).toBe('FunctionDeclaration');
+        expect(statement.astRootNode.type).toBe('FunctionDeclaration');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('var c = 3;');
+        expect(escodegenerate(statement.astRootNode)).toBe('var c = 3;');
         
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('c < 3');
+        expect(escodegenerate(statement.astRootNode)).toBe('c < 3');
 
         expect(codeIterator.hasNext()).toBeTruthy('hasNext() should return true');
         statement = codeIterator.executeNext();
-        expect(escodegenerate(statement.node)).toBe('return 1;');
+        expect(escodegenerate(statement.astRootNode)).toBe('return 1;');
 
         expect(codeIterator.hasNext()).toBeFalsy('hasNext() should return false');
     });

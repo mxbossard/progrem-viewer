@@ -10,13 +10,17 @@ export abstract class HtmlHelper {
         }
     }
 
-    static span(content: string|HTMLElement, classes: string|string[]): HTMLElement {
+    static span(classes: string|string[], content?: string|HTMLElement|HTMLElement[]): HTMLElement {
         let elt = document.createElement("span");
-        HtmlHelper.addClasses(elt, classes);
-        
+        if (classes) {
+            HtmlHelper.addClasses(elt, classes);
+        }
+
         if (typeof content === 'string') {
             elt.innerText = content;
-        } else {
+        } else if (Array.isArray(content)) {
+            content.forEach(c => elt.appendChild(c));
+        } else if (content) {
             elt.appendChild(content);
         }
         

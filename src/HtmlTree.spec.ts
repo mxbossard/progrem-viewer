@@ -24,7 +24,7 @@ describe('BasicEsToHtmlTreeStore', () => {
         let progremCode = CodeService.progremCodeFactory.build(programWithReturn);
         let func = progremCode.colorerProgremFunction();
         let htmlFactory = new FunctionSpoolerEsToHtmlFactory(document);
-        let treeStore = new FunctionDeclarationToHtmlTreeStore(func, htmlFactory);
+        let treeStore = new FunctionDeclarationToHtmlTreeStore(func.astRootNode, htmlFactory);
 
         //let container = jasmine.createSpyObj("HTML Element", ["appendChild"]);
         let box = document.createElement('div');

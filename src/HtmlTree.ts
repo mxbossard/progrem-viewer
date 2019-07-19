@@ -1,7 +1,7 @@
 import { BaseNode, BlockStatement, FunctionDeclaration, IfStatement, VariableDeclaration, VariableDeclarator, AssignmentExpression, BinaryExpression, ExpressionStatement, ReturnStatement } from "estree";
-import { ProgremCode } from "./CodeService";
 import { AstHelper } from "./AstHelper";
 import { generate as escodeGenerate } from 'escodegen';
+import { ProgremCode } from "./Types";
 
 export interface EsToHtmlTreeStore {
     paintInto(element: HTMLElement): void
@@ -13,7 +13,7 @@ export interface EsToHtmlTreeStore {
 }
 
 export interface EsToHtmlTreeStoreFactory {
-    build(code: ProgremCode): EsToHtmlTreeStore
+    build(code: ProgremCode<any>): EsToHtmlTreeStore
 }
 
 export interface EsToHtmlFactory<T extends BaseNode> {
@@ -301,8 +301,8 @@ export class CodeSpoolerEsToHtmlTreeMapperFactory implements EsToHtmlTreeStoreFa
         this.htmlFactory = new FunctionSpoolerEsToHtmlFactory(_document);
     }
 
-    build(code: ProgremCode): EsToHtmlTreeStore {
-        let store = new FunctionDeclarationToHtmlTreeStore(code.colorerProgremFunction(), this.htmlFactory);
+    build(code: ProgremCode<any>): EsToHtmlTreeStore {
+        let store = new FunctionDeclarationToHtmlTreeStore(code.colorerProgremFunction().astRootNode, this.htmlFactory);
         return store;
     }
     

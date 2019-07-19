@@ -1,10 +1,11 @@
 import { generate as escodeGenerate } from 'escodegen';
 import { create as md5Create } from 'js-md5';
-import { ProgremCode } from "./CodeService";
 import { FunctionDeclaration, BaseNode, BlockStatement, IfStatement, Expression, VariableDeclaration, VariableDeclarator, ExpressionStatement, AssignmentExpression, ReturnStatement, ConditionalExpression, BinaryExpression } from 'estree';
-import { ProgremScheduler, ProgremState, CodeExecutionListener, GridChangeListener } from './SchedulingService';
+import { ProgremState, CodeExecutionListener, GridChangeListener } from './SchedulingService';
 import { AstHelper } from './AstHelper';
 import { FunctionDeclarationToHtmlTreeStore, CodeSpoolerEsToHtmlTreeMapperFactory, EsToHtmlTreeStore } from './HtmlTree';
+import { ProgremCode, ProgremView, HtmlVerseFactory, ProgremScheduler } from './Types';
+import { EsprimaProgremCode } from './CodeService';
 
 export interface ProgremInspector {
     clear(): void;
@@ -21,7 +22,7 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
     private treeStore1: EsToHtmlTreeStore;
 
     constructor(
-        private progremCode: ProgremCode,
+        private progremCode: EsprimaProgremCode,
         private scheduler: ProgremScheduler,
         private _document: Document
     ) {
@@ -113,7 +114,7 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
         //this.mapping.forEach((elt, node) => elt.classList.remove('highlight'));
         this.treeStore1.removeStyleClasses(['highlight']);
 
-        let executedNode = state.codeStatement.node;
+        let executedNode = state.codeStatement.astRootNode;
         //let htmlNode = this.mapping.get(executedNode);
         //if (!htmlNode) {
         //    throw new Error('Unable to found a HTML element mapped for received statement !')
@@ -337,7 +338,7 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
     private buildHtmlTree2() {
         const codeRoot = document.createElement("div");
         this.progremCodeLines.push(codeRoot);
-        this.unstackAst(codeRoot, [this.progremCode.colorerProgremFunction()], 0);
+        this.unstackAst(codeRoot, [this.progremCode.colorerProgremFunction().astRootNode], 0);
     }
 
     private buildHtmlTree3(): EsToHtmlTreeStore {
@@ -354,7 +355,7 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
 
     private buildHtmlTree() {
         const codeRoot = document.createElement("div");
-        const stack: BaseNode[] = [this.progremCode.colorerProgremFunction()];
+        const stack: BaseNode[] = [this.progremCode.colorerProgremFunction().astRootNode];
         let padding = 0;
 
         //this.progremCode.colorerProgremFunction().body.body.map(n => stack.push(n));
@@ -413,8 +414,27 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
                     this.mapping.set(node, line);
                     break;
             }
-
         } while (stack.length > 0);
+    }
+}
+
+
+export class ProgremInspectorView implements ProgremView, CodeExecutionListener {
+
+    constructor(private htmlFactory: HtmlVerseFactory<any>) {}
+
+    buildView(scheduler: ProgremScheduler): HTMLElement {
+        let colorerProgremFunc = scheduler.getProgrem().colorerProgremFunction();
+        let htmlComponent = this.htmlFactory.build(colorerProgremFunc);
+        return htmlComponent;
+    }
+    
+    fireCodeExecution(state: ProgremState): void {
+
+    }
+
+    fireGridChange(state: ProgremState): void {
+
     }
 
 }

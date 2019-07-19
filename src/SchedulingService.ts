@@ -1,6 +1,6 @@
 import { ProgremConfig } from "./ProgremService";
-import { ProgremCode, CodeIterator, CodeStatement } from "./CodeService";
 import { EvalScope } from "./EvalService";
+import { ProgremScheduler, VerseInstruction, VerseIterator, ProgremCode } from "./Types";
 
 export class ProgremState {
 
@@ -11,7 +11,7 @@ export class ProgremState {
         public readonly ligne: number,
         public readonly frame: number,
         public contexte: object,
-        public readonly codeStatement: CodeStatement | null,
+        public readonly codeStatement: VerseInstruction<any> | null,
     ) {}
 
     public eval(expr: string): any {
@@ -25,6 +25,7 @@ export interface GridChangeListener {fireGridChange: NewStateCallback};
 export interface LineChangeListener {fireLineChange: NewStateCallback};
 export interface FrameChangeListener {fireFrameChange: NewStateCallback};
 
+/*
 export interface ProgremScheduler {
     subscribeCodeExecution(listener: CodeExecutionListener): void
     subscribeGridChange(listener: GridChangeListener): void
@@ -35,18 +36,19 @@ export interface ProgremScheduler {
     current(): ProgremState
     next(): ProgremState
 }
+*/
 
 class SimpleProgremScheduler implements ProgremScheduler {
     
     private state: ProgremState;
-    private codeIterator: CodeIterator | null = null;
+    private codeIterator: VerseIterator<any> | null = null;
 
     private codeExecutionListeners: CodeExecutionListener[] = [];
     private gridChangeListeners: GridChangeListener[] = [];
     private lineChangeListeners: LineChangeListener[] = [];
     private frameChangeListeners: FrameChangeListener[] = [];
 
-    constructor(private config: ProgremConfig, private code: ProgremCode) {
+    constructor(private config: ProgremConfig, private code: ProgremCode<any>) {
         this.state = this.reset();
     }
 
@@ -146,12 +148,16 @@ class SimpleProgremScheduler implements ProgremScheduler {
 
         return newState;
     }
+
+    public getProgrem(): ProgremCode<any> {
+        return this.code;
+    }
     
 }
 
 export namespace SchedulingService {
 
-    export function buildProgremScheduler(config: ProgremConfig, code: ProgremCode) {
+    export function buildProgremScheduler(config: ProgremConfig, code: ProgremCode<any>) {
         return new SimpleProgremScheduler(config, code);
     }
 

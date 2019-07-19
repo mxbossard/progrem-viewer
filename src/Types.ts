@@ -1,20 +1,26 @@
 import { ProgremState, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener } from "./SchedulingService";
-import { BaseNode, FunctionDeclaration } from "estree";
 
 export interface VerseInstruction<AstBaseType> {
-    getAstRootNode():  AstBaseType
+    astRootNode: AstBaseType
 }
-    
+
+export interface VerseInstructionFactory<AstBaseType> {
+    build(param: AstBaseType): VerseInstruction<AstBaseType>;
+}
+
+export interface ProgremCodeFactory<AstBaseType> {
+    build(code: string): ProgremCode<AstBaseType>
+}
 
 export interface VerseIterator<AstBaseType> {
     executeNext(): VerseInstruction<AstBaseType>
     hasNext(): boolean;
 }
 
-export interface ProgremCode {
-    initialiserProgremFunction(): VerseInstruction<any>
-    colorerProgremFunction(): VerseInstruction<any>
-    iterator(): VerseIterator<any>
+export interface ProgremCode<AstBaseType> {
+    initialiserProgremFunction(): VerseInstruction<AstBaseType>
+    colorerProgremFunction(): VerseInstruction<AstBaseType>
+    iterator(state: ProgremState): VerseIterator<AstBaseType>
 }
 
 export interface ProgremScheduler {
@@ -25,7 +31,7 @@ export interface ProgremScheduler {
     reset(): ProgremState
     current(): ProgremState
     next(): ProgremState
-    getProgrem(): ProgremCode
+    getProgrem(): ProgremCode<any>
 }
 
 export interface ProgremView {
@@ -78,53 +84,6 @@ export class HighlightExecutingVerseDecorator implements StyleDecorator<VerseIns
 
         }
         `;
-    }
-
-}
-
-export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
-
-    private variableCounter: number = 0;
-
-    decorate(node: BaseNode, element: HTMLElement): void {
-        throw new Error("Method not implemented.");
-    }    
-    
-    buildStyleSheet(): string {
-        throw new Error("Method not implemented.");
-    }
-
-}
-
-export class PadVerseDecorator implements StyleDecorator<BaseNode> {
-
-    decorate(node: BaseNode, element: HTMLElement): void {
-        throw new Error("Method not implemented.");
-    }    
-    
-    buildStyleSheet(): string {
-        throw new Error("Method not implemented.");
-    }
-
-}
-
-export class ProgremInspector implements ProgremView, CodeExecutionListener {
-
-    constructor(private htmlFactory: HtmlVerseFactory<any>) {}
-
-    buildView(scheduler: ProgremScheduler): HTMLElement {
-        let colorerProgremFunc = scheduler.getProgrem().colorerProgremFunction();
-        let astRootNode = colorerProgremFunc.getAstRootNode();
-        let htmlComponent = this.htmlFactory.build(astRootNode);
-        return htmlComponent;
-    }
-    
-    fireCodeExecution(state: ProgremState): void {
-
-    }
-
-    fireGridChange(state: ProgremState): void {
-
     }
 
 }

@@ -4,7 +4,9 @@ import { walk as esprimaWalk } from 'esprima-walk';
 import { generate as escodeGenerate } from 'escodegen';
 import { BaseNode, FunctionDeclaration, BlockStatement, IfStatement, ReturnStatement, Statement } from 'estree';
 import { ProgremState } from './SchedulingService';
-
+import { VerseInstructionFactory, ProgremCodeFactory, ProgremCode } from './Types';
+import { EsprimaVerseIteraor, EsprimaVerseInstruction } from './EsprimaTypes';
+/*
 export class CodeStatement {
     constructor(
         public node: BaseNode,
@@ -27,37 +29,23 @@ export interface ProgremCode {
     iterator(state: ProgremState): CodeIterator;
 }
 
-class BasicEsprimaCodeStatementFactory implements CodeStatementFactory<Statement> {
+class EsprimaCodeStatementFactory implements VerseInstructionFactory<BaseNode> {
 
-    build(param: BaseNode): CodeStatement {
-        /*
-        if (param.type === 'ReturnStatement') {
-            let stmt = param as ReturnStatement;
-            let code = escodeGenerate(stmt);
-            return new CodeStatement(param, code);
-        } else if (param.type === 'IfStatement') {
-            let stmt = param as IfStatement;
-            let code = escodeGenerate(stmt.test);
-            return new CodeStatement(param, code);
-        } else {
-            let code = escodeGenerate(param);
-            return new CodeStatement(param, code);
-        }
-        */
-        
+    build(param: BaseNode): EsprimaVerseInstruction {
         if (param) 
-            return new CodeStatement(param);
+            return new EsprimaVerseInstruction(param);
         
         throw new Error('Unable to build non statement code !');
     }
 }
+*/
 
-class BasicEsprimaCodeIterator implements CodeIterator {
+class BasicEsprimaCodeIterator implements EsprimaVerseIteraor {
 
     private stack: BaseNode[] = [];
-    private codeStatementFactory = new BasicEsprimaCodeStatementFactory();
     private returnValue: any = null;
     private finished = false
+    private verseFactory = new EsprimaVerseInstructionFactory();
 
     constructor(
             private rootNode: BaseNode, 
@@ -74,7 +62,7 @@ class BasicEsprimaCodeIterator implements CodeIterator {
         this.state.eval('var contexte = ' + JSON.stringify(_contexte));
     }
 
-    executeNext(): CodeStatement {
+    executeNext(): EsprimaVerseInstruction {
         do {
             // Get the first node on the stack
             let node = this.stack.shift();
@@ -92,7 +80,7 @@ class BasicEsprimaCodeIterator implements CodeIterator {
                     let func = node as FunctionDeclaration;
                     this.stack.unshift(func.body);
                     this.declareProgremArguments();
-                    return this.codeStatementFactory.build(func);
+                    return this.verseFactory.build(func);
                     break;
 
                 case 'BlockStatement':
@@ -119,13 +107,13 @@ class BasicEsprimaCodeIterator implements CodeIterator {
                         }
                     }
 
-                    return this.codeStatementFactory.build(stmt.test);
+                    return this.verseFactory.build(stmt.test);
 
                 case 'ReturnStatement':
                     stmt = node as ReturnStatement;
                     this.returnValue = this.state.eval(escodeGenerate(stmt.argument));
                     this.finished = true;
-                    return this.codeStatementFactory.build(stmt);
+                    return this.verseFactory.build(stmt);
 
                 default:
                     //console.log('Node:', node);
@@ -133,7 +121,7 @@ class BasicEsprimaCodeIterator implements CodeIterator {
                     //console.log('Generated code:', code);
                     let evalResult = this.state.eval(code);
                     //console.log('Evaluate to:', evalResult);
-                    return this.codeStatementFactory.build(node);
+                    return this.verseFactory.build(node);
             }
         } while (this.stack.length > 0);
 
@@ -178,16 +166,16 @@ class BasicEsprimaCodeIterator implements CodeIterator {
     
 }
 
-export class EsprimaProgremCode implements ProgremCode {
+export class EsprimaProgremCode implements ProgremCode<BaseNode> {
 
     private esprimaProgram: Program;
+    private verseFactory = new EsprimaVerseInstructionFactory();
 
     constructor(code: string) {
         this.esprimaProgram = parseModule(code);
     }
 
-
-    public initialiserProgremFunction(): FunctionDeclaration {
+    public initialiserProgremFunction(): EsprimaVerseInstruction {
         var result: FunctionDeclaration | null = null;
         esprimaWalk(this.esprimaProgram, node => {
             if( node.type === 'FunctionDeclaration' && node.id && node.id.name === 'initialiserProgrem' ) {
@@ -195,12 +183,12 @@ export class EsprimaProgremCode implements ProgremCode {
             }
         } );
         if (result) {
-            return result;
+            return this.verseFactory.build(result);
         }
         throw new Error('Impossible de trouver une fonction colorerProgrem() !');
     }
 
-    public colorerProgremFunction(): FunctionDeclaration {
+    public colorerProgremFunction(): EsprimaVerseInstruction {
         var result: FunctionDeclaration | null = null;
         esprimaWalk(this.esprimaProgram, node => {
             if( node.type === 'FunctionDeclaration' && node.id && node.id.name === 'colorerProgrem' ) {
@@ -208,25 +196,38 @@ export class EsprimaProgremCode implements ProgremCode {
             }
         } );
         if (result) {
-            return result;
+            return this.verseFactory.build(result);
         }
         throw new Error('Impossible de trouver une fonction colorerProgrem() !');
     }
 
-    iterator(state: ProgremState): CodeIterator {
-        return new BasicEsprimaCodeIterator(this.colorerProgremFunction(), state);
+    public iterator(state: ProgremState): EsprimaVerseIteraor {
+        return new BasicEsprimaCodeIterator(this.colorerProgremFunction().astRootNode, state);
     }
 }
 
-class ProgremCodeFactory {
-    public build(code: string): ProgremCode {
+class EsprimaProgremCodeFactory implements ProgremCodeFactory<BaseNode> {
+    public build(code: string): ProgremCode<any> {
         return new EsprimaProgremCode(code);
     }
 }
 
+class EsprimaVerseInstructionFactory implements VerseInstructionFactory<BaseNode> {
+    
+    build(param: BaseNode): EsprimaVerseInstruction {
+        if (!param) {
+            throw new Error('Impossible to build empty Verse !');
+        }
+        return {
+            astRootNode: param
+        }
+    }
+
+}
+
 export namespace CodeService {
 
-    export const progremCodeFactory = new ProgremCodeFactory();
+    export const progremCodeFactory: ProgremCodeFactory<any> = new EsprimaProgremCodeFactory();
 
     export function loadProgrem(fileUrl: string): Promise<string> {
         return new Promise((resolve, reject) => {
