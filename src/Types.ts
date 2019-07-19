@@ -1,21 +1,23 @@
 import { ProgremState, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener } from "./SchedulingService";
-import { BaseNode } from "estree";
+import { BaseNode, FunctionDeclaration } from "estree";
 
-interface VerseInstruction<AstBaseType> {
-    rootNode():  AstBaseType
+export interface VerseInstruction<AstBaseType> {
+    getAstRootNode():  AstBaseType
 }
     
 
-interface VerseIterator<AstBaseType> {
+export interface VerseIterator<AstBaseType> {
     executeNext(): VerseInstruction<AstBaseType>
     hasNext(): boolean;
 }
 
-interface ProgremCode {
+export interface ProgremCode {
+    initialiserProgremFunction(): VerseInstruction<any>
+    colorerProgremFunction(): VerseInstruction<any>
     iterator(): VerseIterator<any>
 }
 
-interface ProgremScheduler {
+export interface ProgremScheduler {
     subscribeCodeExecution(listener: CodeExecutionListener): void
     subscribeGridChange(listener: GridChangeListener): void
     subscribeLineChange(listener: LineChangeListener): void
@@ -23,23 +25,23 @@ interface ProgremScheduler {
     reset(): ProgremState
     current(): ProgremState
     next(): ProgremState
-    progrem(): ProgremCode
+    getProgrem(): ProgremCode
 }
 
-interface ProgremView {
+export interface ProgremView {
     buildView(scheduler: ProgremScheduler): HTMLElement
 }
 
-interface StyleDecorator<T> {
+export interface StyleDecorator<T> {
     decorate(node: T, element: HTMLElement): void
     buildStyleSheet(): string
 }
 
-interface HtmlVerseFactory<AstBaseType> {
+export interface HtmlVerseFactory<AstBaseType> {
     build(verse: VerseInstruction<AstBaseType>): HTMLElement
 }
 
-class StyleDecoratorAggregation<T> implements StyleDecorator<T> {
+export class StyleDecoratorAggregation<T> implements StyleDecorator<T> {
 
     constructor(private decorators: StyleDecorator<T>[]) {}
 
@@ -53,7 +55,7 @@ class StyleDecoratorAggregation<T> implements StyleDecorator<T> {
 
 }
 
-class HighlightExecutingVerseDecorator implements StyleDecorator<VerseInstruction<any>> {
+export class HighlightExecutingVerseDecorator implements StyleDecorator<VerseInstruction<any>> {
 
     public static readonly NOT_EXECUTED_CLASS = 'verse-not-executed';
     public static readonly EXECUTING_CLASS = 'verse-executing';
@@ -80,7 +82,7 @@ class HighlightExecutingVerseDecorator implements StyleDecorator<VerseInstructio
 
 }
 
-class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
+export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
 
     private variableCounter: number = 0;
 
@@ -94,23 +96,36 @@ class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
 
 }
 
-class BasicProgremInspectorHtmlFactory implements HtmlVerseFactory<BaseNode> {
+export class PadVerseDecorator implements StyleDecorator<BaseNode> {
 
-    constructor(private decorator: StyleDecorator<BaseNode>) {}
-
-    build(verse: VerseInstruction<BaseNode>): HTMLElement {
+    decorate(node: BaseNode, element: HTMLElement): void {
+        throw new Error("Method not implemented.");
+    }    
+    
+    buildStyleSheet(): string {
         throw new Error("Method not implemented.");
     }
 
 }
 
-class ProgremInspector implements ProgremView {
+export class ProgremInspector implements ProgremView, CodeExecutionListener {
 
-    constructor(private htmlFactory: BasicProgremInspectorHtmlFactory) {}
+    constructor(private htmlFactory: HtmlVerseFactory<any>) {}
 
     buildView(scheduler: ProgremScheduler): HTMLElement {
-        throw new Error("Method not implemented.");
+        let colorerProgremFunc = scheduler.getProgrem().colorerProgremFunction();
+        let astRootNode = colorerProgremFunc.getAstRootNode();
+        let htmlComponent = this.htmlFactory.build(astRootNode);
+        return htmlComponent;
     }
     
+    fireCodeExecution(state: ProgremState): void {
+
+    }
+
+    fireGridChange(state: ProgremState): void {
+
+    }
+
 }
 
