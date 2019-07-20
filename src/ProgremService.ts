@@ -7,7 +7,8 @@ import { ScreenConfig } from './ScreenService';
 import { EstreeProgremInspectorHtmlFactory } from './EstreeProgremInspectorHtmlFactory';
 import { BaseNode } from 'estree';
 import { StyleDecoratorAggregation, ProgremScheduler } from './Types';
-import { PadVerseDecorator } from './EstreeStyleDecorator';
+import { PadVerseDecorator, ColorVerseVariableDecorator } from './EstreeStyleDecorator';
+import { HtmlHelper } from './HtmlHelper';
 
 export class ProgremConfig {
     constructor(
@@ -43,7 +44,8 @@ export namespace ProgremService {
 
             //let progremInspector = new BasicHtmlEsprimaProgremInspector(progremCode, scheduler, document);
             let progremInspectorDecorators = new StyleDecoratorAggregation<BaseNode>([
-                new PadVerseDecorator()
+                new PadVerseDecorator(),
+                new ColorVerseVariableDecorator()
             ]);
             let progremInspectorFactory = new EstreeProgremInspectorHtmlFactory(progremInspectorDecorators);
             let progremInspectorView = new ProgremInspectorView(progremInspectorFactory);
@@ -53,6 +55,10 @@ export namespace ProgremService {
                 console.log('codeElement', codeElement);
                 let progremInspectorComponent = progremInspectorView.buildView(scheduler);
                 codeElement.appendChild(progremInspectorComponent);
+
+                let decoratorStyle = progremInspectorDecorators.buildStyleSheet();
+                console.log('decoratorStyle:', decoratorStyle)
+                HtmlHelper.defineCssRules('progrem-inspector', decoratorStyle);
             }
             
             let gridElement = document.querySelector('.progrem');

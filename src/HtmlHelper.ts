@@ -10,7 +10,7 @@ export abstract class HtmlHelper {
         }
     }
 
-    static span(classes: string|string[], content?: string|HTMLElement|HTMLElement[]): HTMLElement {
+    static span(classes: string|string[], content?: string|HTMLElement|(HTMLElement|string)[]): HTMLElement {
         let elt = document.createElement("span");
         if (classes) {
             HtmlHelper.addClasses(elt, classes);
@@ -19,11 +19,31 @@ export abstract class HtmlHelper {
         if (typeof content === 'string') {
             elt.innerText = content;
         } else if (Array.isArray(content)) {
-            content.forEach(c => elt.appendChild(c));
+            content.forEach(c => {
+                if (typeof c === 'string') {
+                    elt.innerHTML += c;
+                } else {
+                    elt.appendChild(c);
+                }
+            })
         } else if (content) {
             elt.appendChild(content);
         }
         
         return elt;
+    }
+
+    static defineCssRules(id: string, cssRules: string): void {
+        let cssId = 'css-' + id;
+        let styleElement = document.getElementById(cssId);
+        if(!styleElement) {
+            styleElement = document.createElement('style');
+        }
+        styleElement.id = cssId;
+        /* add style rules to the style element */
+        styleElement.appendChild(document.createTextNode(cssRules));
+        
+        /* attach the style element to the document head */
+        document.getElementsByTagName('head')[0].appendChild(styleElement);
     }
 }

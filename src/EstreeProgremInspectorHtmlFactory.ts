@@ -56,27 +56,27 @@ export class EstreeProgremInspectorHtmlFactory implements HtmlVerseFactory<BaseN
     protected buildFunctionDeclaration(node: BaseNode): HTMLElement {
         let n = node as FunctionDeclaration;
         
-        let declStartText: string;
+        let declStartItems: (string | HTMLElement)[];
         if (n.id) {
             let funcId = HtmlHelper.span('func-id', n.id.name);
-            declStartText = 'function ' + funcId.textContent + ' ( ';
+            declStartItems = ['function ', funcId, ' ( '];
         } else {
-            declStartText = 'function ( ';// + func.params.map(x => x.name).join(', ') + ' ) {';
+            declStartItems = ['function ( '];// + func.params.map(x => x.name).join(', ') + ' ) {';
         }
 
         let paramCount = n.params.length;
         n.params.forEach((param, i) => {
             let varName = AstHelper.patternToString(param);
-            let funcParam = HtmlHelper.span('func-param', varName);
-            declStartText += funcParam.textContent
+            let funcParam = this.buildNode(param);//HtmlHelper.span('func-param', varName);
+            declStartItems.push(funcParam);
             if (i < paramCount - 1) {
-                declStartText += ', ';
+                declStartItems.push(', ');
             }
         });
 
-        declStartText += ' ) {';
+        declStartItems.push(' ) {');
 
-        let declStart = HtmlHelper.span('func-start', declStartText);
+        let declStart = HtmlHelper.span('func-start', declStartItems);
         let funcBody = this.buildNode(n.body);
         let declEnd = HtmlHelper.span('func-end', '}');
         let decl = HtmlHelper.span('func-declaration', [declStart, funcBody, declEnd]);
@@ -95,7 +95,7 @@ export class EstreeProgremInspectorHtmlFactory implements HtmlVerseFactory<BaseN
         let n = node as IfStatement;
         let content: HTMLElement[] = []
         let test = this.buildNode(n.test);
-        let ifStartText: string = 'if ( ' + test.textContent + ' ) {';
+        let ifStartText = ['if ( ', test, ' ) {'];
         let ifStart = HtmlHelper.span('statement if-statement-start', ifStartText);
         content.push(ifStart);
 
@@ -104,7 +104,6 @@ export class EstreeProgremInspectorHtmlFactory implements HtmlVerseFactory<BaseN
         content.push(ifThen);
 
         if (n.alternate) {
-            content.push(ifStart);
             let ifElseDecl = HtmlHelper.span('statement if-statement-else', '} else {');
             content.push(ifElseDecl);
 
@@ -124,7 +123,9 @@ export class EstreeProgremInspectorHtmlFactory implements HtmlVerseFactory<BaseN
     protected buildVariableDeclaration(node: BaseNode): HTMLElement {
         let n = node as VariableDeclaration;
         let declarations = n.declarations.map(d => this.buildNode(d));
-        let container = HtmlHelper.span('declaration variable-declaration', declarations);
+        let container = HtmlHelper.span('declaration variable-declaration');
+        container.innerHTML = n.kind + ' ';
+        declarations.forEach(d => container.appendChild(d));
         return container;
     }
 
@@ -160,15 +161,16 @@ export class EstreeProgremInspectorHtmlFactory implements HtmlVerseFactory<BaseN
         let n = node as BinaryExpression;
         let left = this.buildNode(n.left);
         let leftPart = HtmlHelper.span('expression', left);
-        let right = this.buildNode(n.left);
+        let operatorPart = HtmlHelper.span('expression-operator', ' ' + n.operator + ' ');
+        let right = this.buildNode(n.right);
         let rightPart = HtmlHelper.span('expression', right);
-        let container = HtmlHelper.span('expression binary-expression', [leftPart, rightPart]);
+        let container = HtmlHelper.span('expression binary-expression', [leftPart, operatorPart, rightPart]);
         return container;
     }
 
     protected buildExpressionStatement(node: BaseNode): HTMLElement {
         let n = node as ExpressionStatement;
-        let code = escodeGenerate(n);
+        let code = this.buildNode(n.expression);
         let container = HtmlHelper.span('statement expression-statement', code);
         return container;
     }
