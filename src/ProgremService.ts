@@ -52,12 +52,12 @@ export namespace ProgremService {
 
             let codeElement = document.querySelector<HTMLElement>('.code');
             if (codeElement) {
-                console.log('codeElement', codeElement);
+                //console.log('codeElement', codeElement);
                 let progremInspectorComponent = progremInspectorView.buildView(scheduler);
                 codeElement.appendChild(progremInspectorComponent);
 
                 let decoratorStyle = progremInspectorDecorators.buildStyleSheet();
-                console.log('decoratorStyle:', decoratorStyle)
+                //console.log('decoratorStyle:', decoratorStyle)
                 HtmlHelper.defineCssRules('progrem-inspector', decoratorStyle);
             }
             

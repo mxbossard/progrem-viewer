@@ -35,8 +35,10 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
     
     buildStyleSheet(): string {
         let style = '';
+        //console.log('variable count:', this.variableMap.size);
         this.variableMap.forEach((index, id) => {
             let color = this.hashStringToColor(id, this.variableMap.size);
+            //console.log('building color #', id, '=>', color);
             style += `
                 .variable-${index} .variable-id, .func-start .variable-${index} {
                     background-color: ${color};
@@ -61,13 +63,16 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
         
         hue = ( parseInt(hash.substring(shift + 0, shift + 1), 16) + 16 * parseInt(hash.substring(shift + 1, shift + 2), 16) + 256 * parseInt(hash.substring(shift + 2, shift + 3), 16) );
         hue = Math.floor(hue % colorCount) * 360 / colorCount;
+        hue = hue % 360;
 
+        // Color deduplication
         while (!this.colorMap.get(key)) {
             let duplicateColor = false;
             for (let c of this.colorMap.values()) {
-                if (c === hue) {
+                if (Math.abs(c - hue) < Math.floor(180 / colorCount)) {
                     duplicateColor = true;
-                    hue += Math.floor(360 / colorCount);
+                    hue += Math.floor(270 / colorCount);
+                    hue = hue % 360;
                     break;
                 }
             }

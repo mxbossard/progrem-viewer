@@ -28,7 +28,7 @@ export class EstreeProgremInspectorHtmlFactory implements HtmlVerseFactory<BaseN
      * @param node 
      */
     protected buildNodeInternal(node: BaseNode): HTMLElement {
-        console.log('Building node', node, '...');
+        //console.log('Building node', node, '...');
         switch (node.type) {
             case 'FunctionDeclaration':
                 return this.buildFunctionDeclaration(node);
