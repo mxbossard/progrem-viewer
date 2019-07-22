@@ -78,7 +78,7 @@ export interface StyleDecorator<T> {
 
 export interface HtmlCoupletFactory<AstBaseType> {
     buildCouplet(): HTMLElement
-    getHtmlVerse(verse: ProgremVerse<AstBaseType>): HTMLElement
+    getHtmlVerse(verse: ProgremVerse<AstBaseType>): HTMLElement|undefined
 }
 
 export class StyleDecoratorAggregation<T> implements StyleDecorator<T> {
@@ -97,4 +97,11 @@ export class StyleDecoratorAggregation<T> implements StyleDecorator<T> {
 
 }
 
+export interface ColorProvider {
+    hslColor(hue: number): string;
+    hashStringToColor(key: string, colorCount: number, shift?: number): string;
+}
 
+export interface ColorProviderFactory {
+    build(key?: string): ColorProvider;
+}

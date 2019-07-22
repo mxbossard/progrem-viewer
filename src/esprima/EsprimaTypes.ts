@@ -23,7 +23,7 @@ export interface EsprimaProgremFactory extends ProgremFactory<BaseNode> {
 
 export interface EsprimaHtmlCoupletFactory extends HtmlCoupletFactory<BaseNode> {
     buildCouplet(): HTMLElement
-    getHtmlVerse(verse: EsprimaVerse): HTMLElement
+    getHtmlVerse(verse: EsprimaVerse): HTMLElement|undefined
 }
 
 export class EsprimaVerse implements ProgremVerse<BaseNode> {

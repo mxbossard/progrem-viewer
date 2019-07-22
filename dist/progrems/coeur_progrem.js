@@ -31,13 +31,13 @@ function colorerProgrem(colonne, ligne, contexte) {
     var equationEugenePartieDroite = Math.pow(x, 2) * Math.pow(y, 3)
     var equationEugeneDifference = equationEugenePartieGauche - equationEugenePartieDroite;
     
-    var couleur;
+    //var couleur;
     if ( equationEugeneDifference < 0 ) {
-        couleur = 'rgb(255, 102, 153)'; // Couleur rose #FF6699
+        return 'rgb(255, 102, 153)'; // Couleur rose #FF6699
     } else {
-        couleur = 'rgb(135, 206, 235)'; // Couleur bleu ciel
+        return 'rgb(135, 206, 235)'; // Couleur bleu ciel
         //couleur = 'rgb(135, 206, 250)'; // Couleur lightskyblue
     }
 
-    return couleur;
+    //return couleur;
 }

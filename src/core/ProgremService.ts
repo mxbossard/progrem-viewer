@@ -9,6 +9,9 @@ import { HtmlHelper } from './HtmlHelper';
 import { EsprimaProgremInspectorHtmlFactory } from '../components/progremInspector/EsprimaProgremInspectorHtmlFactory';
 import { CodeService } from './CodeService';
 import { ProgremGridComponent } from '../components/progremGrid/ProgremGridComponent';
+import { VariableScopeComponent } from '../components/variableScope/VariableScopeComponent';
+import { EsprimaVariableScopeHtmlFactory } from '../components/variableScope/EsprimaVariableScopeHtmlFactory';
+import { ColorVariableScopeDecorator } from '../components/variableScope/EsprimaVariableScopeStyleDecorators';
 
 export class ProgremConfig {
     constructor(
@@ -33,6 +36,8 @@ export namespace ProgremService {
 
         CodeService.loadProgrem(url).then(code => {
             let progremCode = CodeService.progremFactory.buildProgrem(code);
+            let progremCouplet = progremCode.colorerProgremFunction();
+
             console.log('progrem AST:', progremCode.colorerProgremFunction);
 
             // Load initProgrem Function code
@@ -50,7 +55,7 @@ export namespace ProgremService {
                     new ColorVerseVariableDecorator(),
                     //new HighlightExecutingVerseDecorator(scheduler),
                 ]);
-                let progremInspectorFactory = new EsprimaProgremInspectorHtmlFactory(progremCode.colorerProgremFunction(), progremInspectorDecorators);
+                let progremInspectorFactory = new EsprimaProgremInspectorHtmlFactory(progremCouplet, progremInspectorDecorators);
                 let progremInspectorView = new ProgremInspectorComponent(scheduler, progremInspectorFactory);
     
                 //console.log('codeElement', codeElement);
@@ -69,6 +74,21 @@ export namespace ProgremService {
                 progremGridContainer.appendChild(progremGridHtml);
            }
 
+           let variableScopeContainer = document.querySelector<HTMLElement>('.variable-scope-component');
+           if (variableScopeContainer) {
+                let variableScopeDecorators = new StyleDecoratorAggregation<string>([
+                    new ColorVariableScopeDecorator()
+                ])
+               let htmlFactory = new EsprimaVariableScopeHtmlFactory(progremCouplet, variableScopeDecorators, scheduler);
+                let variableScopeComponent = new VariableScopeComponent(scheduler, htmlFactory);
+                let variableScopeHtml = variableScopeComponent.renderHtml();
+                variableScopeContainer.appendChild(variableScopeHtml);
+
+                let decoratorStyle = variableScopeDecorators.buildStyleSheet();
+                //console.log('decoratorStyle:', decoratorStyle)
+                HtmlHelper.defineCssRules('variable-scope-component', decoratorStyle);
+           }
+
             timer(0);
         });
     }
@@ -76,7 +96,7 @@ export namespace ProgremService {
     function timer(timestamp: number) {
         window.requestAnimationFrame(timer);
 
-        if (timestamp - previousRepaintTime < 500) {
+        if (timestamp - previousRepaintTime < 1000) {
             return;
         }
 

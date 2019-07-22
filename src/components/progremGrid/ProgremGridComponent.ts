@@ -2,9 +2,8 @@ import { ProgremComponent, ProgremScheduler, StartIteratingCodeListener, GridCha
 import { ScreenConfig } from "../../core/ScreenService";
 import { ProgremConfig } from "../../core/ProgremService";
 import { HtmlHelper } from "../../core/HtmlHelper";
-import { Observable, Subscription, Scheduler } from 'rxjs/Rx';
-import { scheduled, animationFrameScheduler, timer } from "rxjs";
-import { takeUntil, repeat, count, tap } from "rxjs/operators";
+import { Observable, Subscription } from 'rxjs/Rx';
+import { animationFrameScheduler } from "rxjs";
 
 export class ProgremGridComponent implements ProgremComponent, StartIteratingCodeListener, GridChangeListener {
     
