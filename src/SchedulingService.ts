@@ -11,7 +11,7 @@ export class ProgremState {
         public readonly ligne: number,
         public readonly frame: number,
         public contexte: object,
-        public readonly codeStatement: VerseInstruction<any> | null,
+        public readonly verse: VerseInstruction<any> | null,
     ) {}
 
     public eval(expr: string): any {

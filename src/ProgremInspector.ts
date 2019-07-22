@@ -4,14 +4,14 @@ import { FunctionDeclaration, BaseNode, BlockStatement, IfStatement, Expression,
 import { ProgremState, CodeExecutionListener, GridChangeListener } from './SchedulingService';
 import { AstHelper } from './AstHelper';
 import { FunctionDeclarationToHtmlTreeStore, CodeSpoolerEsToHtmlTreeMapperFactory, EsToHtmlTreeStore } from './HtmlTree';
-import { ProgremCode, ProgremView, HtmlVerseFactory, ProgremScheduler } from './Types';
-import { EsprimaProgremCode } from './CodeService';
+import { ProgremCode, ProgremView, ProgremScheduler, HtmlCoupletFactory } from './Types';
 
 export interface ProgremInspector {
     clear(): void;
     attach(element: HTMLElement | null): void
 }
 
+/*
 export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeExecutionListener, GridChangeListener {
     
     private progremCodeLines: HTMLElement[] = [];
@@ -107,14 +107,14 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
     }
 
     public fireCodeExecution(state: ProgremState) {
-        if (state.codeStatement === null) {
+        if (state.verse === null) {
             throw new Error('Received a null statement !');
         }
 
         //this.mapping.forEach((elt, node) => elt.classList.remove('highlight'));
         this.treeStore1.removeStyleClasses(['highlight']);
 
-        let executedNode = state.codeStatement.astRootNode;
+        let executedNode = state.verse.astRootNode;
         //let htmlNode = this.mapping.get(executedNode);
         //if (!htmlNode) {
         //    throw new Error('Unable to found a HTML element mapped for received statement !')
@@ -418,23 +418,66 @@ export class BasicHtmlEsprimaProgremInspector implements ProgremInspector, CodeE
     }
 }
 
+*/
 
-export class ProgremInspectorView implements ProgremView, CodeExecutionListener {
+export class ProgremInspectorView implements ProgremView, CodeExecutionListener, GridChangeListener {
 
-    constructor(private htmlFactory: HtmlVerseFactory<any>) {}
+    private executingElements: HTMLElement[] = [];
+    private executedElements: HTMLElement[] = [];
+
+    public static readonly EXECUTING_CLASS = 'verse-executing';
+    public static readonly EXECUTED_CLASS = 'verse-executed';
+
+    constructor(
+        private scheduler: ProgremScheduler,
+        private htmlFactory: HtmlCoupletFactory<any>
+    ) {
+        scheduler.subscribeCodeExecution(this);
+        scheduler.subscribeGridChange(this);
+    }
 
     buildView(scheduler: ProgremScheduler): HTMLElement {
-        let colorerProgremFunc = scheduler.getProgrem().colorerProgremFunction();
-        let htmlComponent = this.htmlFactory.build(colorerProgremFunc);
+        let htmlComponent = this.htmlFactory.buildCouplet();
         return htmlComponent;
     }
     
     fireCodeExecution(state: ProgremState): void {
+        let htmlVerse = this.htmlFactory.getHtmlVerse(state.verse);
+        if(htmlVerse) {
+            htmlVerse.classList.add(ProgremInspectorView.EXECUTING_CLASS);
+        }
+        while (this.executingElements.length > 0) {
+            let elt = this.executingElements.pop();
+            if (elt) {
+                this.executedElements.push(elt);
+                elt.classList.remove(ProgremInspectorView.EXECUTING_CLASS);
+                elt.classList.add(ProgremInspectorView.EXECUTED_CLASS);
+            }
+        }
+        if (!htmlVerse) {
+            return;
+        }
 
+        this.executingElements.push(htmlVerse);
+        htmlVerse.classList.add(ProgremInspectorView.EXECUTING_CLASS);
     }
 
     fireGridChange(state: ProgremState): void {
+        while (this.executingElements.length > 0) {
+            let elt = this.executingElements.pop();
+            if (elt) {
+                elt.classList.remove(ProgremInspectorView.EXECUTED_CLASS);
+                elt.classList.remove(ProgremInspectorView.EXECUTING_CLASS);
+            }
+        }
 
+        while (this.executedElements.length > 0) {
+            let elt = this.executedElements.pop();
+            if (elt) {
+                elt.classList.remove(ProgremInspectorView.EXECUTED_CLASS);
+                elt.classList.remove(ProgremInspectorView.EXECUTING_CLASS);
+            }
+        }
     }
 
 }

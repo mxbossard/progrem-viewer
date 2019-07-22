@@ -18,16 +18,19 @@ export abstract class HtmlHelper {
 
         if (typeof content === 'string') {
             elt.innerText = content;
+            console.log(`content: [${content}]`);
+        } else if (content instanceof HTMLElement) {
+            elt.appendChild(content);
         } else if (Array.isArray(content)) {
             content.forEach(c => {
                 if (typeof c === 'string') {
                     elt.innerHTML += c;
-                } else {
+                } else if (c) {
                     elt.appendChild(c);
+                } else {
+                    console.log('Unable to add content:', c);
                 }
             })
-        } else if (content) {
-            elt.appendChild(content);
         }
         
         return elt;

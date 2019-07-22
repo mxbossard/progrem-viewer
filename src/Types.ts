@@ -1,25 +1,33 @@
 import { ProgremState, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener } from "./SchedulingService";
 
-export interface VerseInstruction<AstBaseType> {
-    astRootNode: AstBaseType
+export interface ProgremVerse<AstBaseType> {
+    node: AstBaseType
+    code: AstBaseType
 }
-
+/*
 export interface VerseInstructionFactory<AstBaseType> {
-    build(param: AstBaseType): VerseInstruction<AstBaseType>;
+    build(param: AstBaseType): ProgremVerse<AstBaseType>;
+}
+*/
+export interface ProgremCouplet<AstBaseType> {
+    functionRootNode: AstBaseType
+    verses: ProgremVerse<AstBaseType>[]
 }
 
-export interface ProgremCodeFactory<AstBaseType> {
-    build(code: string): ProgremCode<AstBaseType>
+export interface ProgremFactory<AstBaseType> {
+    buildProgrem(code: string): ProgremCode<AstBaseType>
+    buildCouplet(node: AstBaseType, verses: AstBaseType[]): ProgremCouplet<AstBaseType>
+    buildVerse(node: AstBaseType): ProgremVerse<AstBaseType>
 }
 
 export interface VerseIterator<AstBaseType> {
-    executeNext(): VerseInstruction<AstBaseType>
+    executeNext(): ProgremVerse<AstBaseType>
     hasNext(): boolean;
 }
 
 export interface ProgremCode<AstBaseType> {
-    initialiserProgremFunction(): VerseInstruction<AstBaseType>
-    colorerProgremFunction(): VerseInstruction<AstBaseType>
+    initialiserProgremFunction(): ProgremCouplet<AstBaseType>
+    colorerProgremFunction(): ProgremCouplet<AstBaseType>
     iterator(state: ProgremState): VerseIterator<AstBaseType>
 }
 
@@ -39,20 +47,23 @@ export interface ProgremView {
 }
 
 export interface StyleDecorator<T> {
-    decorate(node: T, element: HTMLElement): void
+    decorate(node: T, element: HTMLElement): HTMLElement
     buildStyleSheet(): string
 }
 
-export interface HtmlVerseFactory<AstBaseType> {
-    build(verse: VerseInstruction<AstBaseType>): HTMLElement
+export interface HtmlCoupletFactory<AstBaseType> {
+    buildCouplet(): HTMLElement
+    getHtmlVerse(verse: ProgremVerse<AstBaseType>): HTMLElement
 }
 
 export class StyleDecoratorAggregation<T> implements StyleDecorator<T> {
 
     constructor(private decorators: StyleDecorator<T>[]) {}
 
-    decorate(node: T, element: HTMLElement): void {
-        this.decorators.forEach(d => d.decorate(node, element));
+    decorate(node: T, element: HTMLElement): HTMLElement {
+        let temp: HTMLElement = element;
+        this.decorators.forEach(d => temp = d.decorate(node, temp));
+        return temp;
     }
 
     buildStyleSheet(): string {
@@ -61,30 +72,4 @@ export class StyleDecoratorAggregation<T> implements StyleDecorator<T> {
 
 }
 
-export class HighlightExecutingVerseDecorator implements StyleDecorator<VerseInstruction<any>> {
-
-    public static readonly NOT_EXECUTED_CLASS = 'verse-not-executed';
-    public static readonly EXECUTING_CLASS = 'verse-executing';
-    public static readonly EXECUTED_CLASS = 'verse-executed';
-
-    decorate(node: VerseInstruction<any>, element: HTMLElement): void {
-        element.classList.add(HighlightExecutingVerseDecorator.NOT_EXECUTED_CLASS);
-    }    
-    
-    buildStyleSheet(): string {
-        return `
-        /** ----- HighlightExecutingVerseDecorator style ----- */
-        ${HighlightExecutingVerseDecorator.NOT_EXECUTED_CLASS}: {
-
-        }
-        ${HighlightExecutingVerseDecorator.EXECUTING_CLASS}: {
-            background-color: yellow;
-        }
-        ${HighlightExecutingVerseDecorator.EXECUTED_CLASS}: {
-
-        }
-        `;
-    }
-
-}
 

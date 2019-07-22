@@ -1,13 +1,14 @@
-import { StyleDecorator } from "./Types";
+import { StyleDecorator, ProgremScheduler } from "./Types";
 import { BaseNode, VariableDeclarator, AssignmentExpression, Identifier } from "estree";
 import { AstHelper } from "./AstHelper";
 import { create as md5Create } from 'js-md5';
+import { ProgremInspectorView } from "./ProgremInspector";
 
 export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
 
     private variableMap: Map<string, number> = new Map();
 
-    decorate(node: BaseNode, element: HTMLElement): void {
+    decorate(node: BaseNode, element: HTMLElement): HTMLElement {
         let varId;
         if (node.type === 'VariableDeclarator') {
             let n = node as VariableDeclarator;
@@ -29,8 +30,11 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
                 this.variableMap.set(varId, varIndex);
             }
 
+            element.classList.add('variable');
             element.classList.add('variable-' + varIndex);
         }
+
+        return element;
     }    
     
     buildStyleSheet(): string {
@@ -40,8 +44,14 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
             let color = this.hashStringToColor(id, this.variableMap.size);
             //console.log('building color #', id, '=>', color);
             style += `
-                .variable-${index} .variable-id, .func-start .variable-${index} {
+                .variable {
+                    padding: 2px 5px;
+                    border: 1px solid transparent;
+                }
+                .${ProgremInspectorView.EXECUTING_CLASS} .variable-${index}.identifier, 
+                .${ProgremInspectorView.EXECUTED_CLASS} .variable-${index}.identifier {
                     background-color: ${color};
+                    border: 1px solid black;
                 }
             `;
         });
@@ -89,24 +99,18 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
 
 export class PadVerseDecorator implements StyleDecorator<BaseNode> {
 
-    decorate(node: BaseNode, element: HTMLElement): void {
+    decorate(node: BaseNode, element: HTMLElement): HTMLElement {
         if (node.type === 'BlockStatement') {
             element.classList.add('code-padding')
         }
+
+        return element;
     }    
     
     buildStyleSheet(): string {
         return `
         .code-padding {
             margin-left: 32px;
-        }
-
-        .block {
-            display: block;
-        }
-
-        .statement, .declaration {
-            display: block;
         }
         `;
     }
