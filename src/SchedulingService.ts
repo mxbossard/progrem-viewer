@@ -1,6 +1,6 @@
 import { ProgremConfig } from "./ProgremService";
 import { EvalScope } from "./EvalService";
-import { ProgremScheduler, VerseInstruction, VerseIterator, ProgremCode } from "./Types";
+import { ProgremScheduler, VerseIterator, ProgremCode, ProgremVerse } from "./Types";
 
 export class ProgremState {
 
@@ -11,7 +11,7 @@ export class ProgremState {
         public readonly ligne: number,
         public readonly frame: number,
         public contexte: object,
-        public readonly verse: VerseInstruction<any> | null,
+        public readonly verse: ProgremVerse<any> | null,
     ) {}
 
     public eval(expr: string): any {

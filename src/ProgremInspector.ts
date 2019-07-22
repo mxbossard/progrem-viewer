@@ -442,6 +442,10 @@ export class ProgremInspectorView implements ProgremView, CodeExecutionListener,
     }
     
     fireCodeExecution(state: ProgremState): void {
+        if (!state.verse) {
+            return;
+        }
+            
         let htmlVerse = this.htmlFactory.getHtmlVerse(state.verse);
         if(htmlVerse) {
             htmlVerse.classList.add(ProgremInspectorView.EXECUTING_CLASS);

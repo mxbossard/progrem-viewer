@@ -6,7 +6,7 @@ import { BasicCanvasProgremGrid } from './ProgremGrid';
 import { ScreenConfig } from './ScreenService';
 import { BaseNode } from 'estree';
 import { StyleDecoratorAggregation, ProgremScheduler } from './Types';
-import { PadVerseDecorator, ColorVerseVariableDecorator, HighlightExecutingVerseDecorator } from './EstreeStyleDecorator';
+import { PadVerseDecorator, ColorVerseVariableDecorator } from './EstreeStyleDecorator';
 import { HtmlHelper } from './HtmlHelper';
 import { EsprimaProgremInspectorHtmlFactory } from './EstreeProgremInspectorHtmlFactory';
 
