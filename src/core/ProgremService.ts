@@ -1,14 +1,14 @@
 import { generate as escodeGenerate } from 'escodegen';
-import { CodeService } from "./CodeService";
 import { SchedulingService } from './SchedulingService';
-import { ProgremInspectorView } from './ProgremInspector';
-import { BasicCanvasProgremGrid } from './ProgremGrid';
+import { ProgremInspectorComponent } from '../components/progremInspector/ProgremInspectorComponent';
 import { ScreenConfig } from './ScreenService';
 import { BaseNode } from 'estree';
 import { StyleDecoratorAggregation, ProgremScheduler } from './Types';
-import { PadVerseDecorator, ColorVerseVariableDecorator } from './EstreeStyleDecorator';
+import { PadVerseDecorator, ColorVerseVariableDecorator } from '../components/progremInspector/EsprimaProgremInspectorStyleDecorators';
 import { HtmlHelper } from './HtmlHelper';
-import { EsprimaProgremInspectorHtmlFactory } from './EstreeProgremInspectorHtmlFactory';
+import { EsprimaProgremInspectorHtmlFactory } from '../components/progremInspector/EsprimaProgremInspectorHtmlFactory';
+import { CodeService } from './CodeService';
+import { ProgremGridComponent } from '../components/progremGrid/ProgremGridComponent';
 
 export class ProgremConfig {
     constructor(
@@ -43,31 +43,39 @@ export namespace ProgremService {
 
             //let progremInspector = new BasicHtmlEsprimaProgremInspector(progremCode, scheduler, document);
             
-            let progremInspectorDecorators = new StyleDecoratorAggregation<BaseNode>([
-                new PadVerseDecorator(),
-                new ColorVerseVariableDecorator(),
-                //new HighlightExecutingVerseDecorator(scheduler),
-            ]);
-            let progremInspectorFactory = new EsprimaProgremInspectorHtmlFactory(progremCode.colorerProgremFunction(), progremInspectorDecorators);
-            let progremInspectorView = new ProgremInspectorView(scheduler, progremInspectorFactory);
-
-            let codeElement = document.querySelector<HTMLElement>('.code');
-            if (codeElement) {
+            let progremInspectorContainer = document.querySelector<HTMLElement>('.progrem-inspector-component');
+            if (progremInspectorContainer) {
+                let progremInspectorDecorators = new StyleDecoratorAggregation<BaseNode>([
+                    new PadVerseDecorator(),
+                    new ColorVerseVariableDecorator(),
+                    //new HighlightExecutingVerseDecorator(scheduler),
+                ]);
+                let progremInspectorFactory = new EsprimaProgremInspectorHtmlFactory(progremCode.colorerProgremFunction(), progremInspectorDecorators);
+                let progremInspectorView = new ProgremInspectorComponent(scheduler, progremInspectorFactory);
+    
                 //console.log('codeElement', codeElement);
-                let progremInspectorComponent = progremInspectorView.buildView(scheduler);
-                codeElement.appendChild(progremInspectorComponent);
+                let progremInspectorHtml = progremInspectorView.renderHtml();
+                progremInspectorContainer.appendChild(progremInspectorHtml);
 
                 let decoratorStyle = progremInspectorDecorators.buildStyleSheet();
                 //console.log('decoratorStyle:', decoratorStyle)
-                HtmlHelper.defineCssRules('progrem-inspector', decoratorStyle);
+                HtmlHelper.defineCssRules('progrem-inspector-component', decoratorStyle);
             }
             
+            /*
             let gridElement = document.querySelector('.progrem');
             console.log('gridElement', gridElement);
             let progremGrid = new BasicCanvasProgremGrid(screenConfig, progremConfig);
             progremGrid.attach(gridElement);
             progremGrid.clear();
             scheduler.subscribeGridChange(progremGrid);
+            */
+           let progremGridContainer = document.querySelector<HTMLElement>('.progrem-grid-component');
+           if (progremGridContainer) {
+                let progremGridComponent = new ProgremGridComponent(screenConfig, progremConfig, scheduler, document);
+                let progremGridHtml = progremGridComponent.renderHtml();
+                progremGridContainer.appendChild(progremGridHtml);
+           }
 
             timer(0);
         });

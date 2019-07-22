@@ -1,5 +1,5 @@
-import { ProgremService, ProgremConfig } from "./ProgremService";
-import { ScreenConfig } from "./ScreenService";
+import { ProgremService, ProgremConfig } from "./core/ProgremService";
+import { ScreenConfig } from "./core/ScreenService";
 
 let screenConfig = new ScreenConfig(20);
 let progremConfig = new ProgremConfig(17, 17, 1);

@@ -10,8 +10,24 @@ export abstract class HtmlHelper {
         }
     }
 
-    static span(classes: string|string[], content?: string|HTMLElement|(HTMLElement|string)[]): HTMLElement {
-        let elt = document.createElement("span");
+    static span(classes: string|string[], content?: string|HTMLElement|(HTMLElement|string)[]): HTMLSpanElement {
+        return HtmlHelper.tag('span', classes, content);
+    }
+
+    static p(classes: string|string[], content?: string|HTMLElement|(HTMLElement|string)[]): HTMLParagraphElement {
+        return HtmlHelper.tag('p', classes, content) as HTMLParagraphElement;
+    }
+
+    static div(classes: string|string[], content?: string|HTMLElement|(HTMLElement|string)[]): HTMLDivElement {
+        return HtmlHelper.tag('div', classes, content) as HTMLDivElement;
+    }
+
+    static canvas(classes: string|string[], content?: string|HTMLElement|(HTMLElement|string)[]): HTMLCanvasElement {
+        return HtmlHelper.tag('canvas', classes, content) as HTMLCanvasElement;
+    }
+
+    private static tag(tagName: string, classes: string|string[], content?: string|HTMLElement|(HTMLElement|string)[]): HTMLElement {
+        let elt = document.createElement(tagName);
         if (classes) {
             HtmlHelper.addClasses(elt, classes);
         }

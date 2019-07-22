@@ -1,9 +1,9 @@
-import { StyleDecorator } from "./Types";
+import { StyleDecorator } from "../../core/Types";
 import { BaseNode, FunctionDeclaration, BlockStatement, IfStatement, VariableDeclarator, VariableDeclaration, AssignmentExpression, BinaryExpression, ExpressionStatement, ReturnStatement, Identifier, MemberExpression } from "estree";
-import { HtmlHelper } from "./HtmlHelper";
-import { AstHelper } from "./AstHelper";
+import { HtmlHelper } from "../../core/HtmlHelper";
+import { EsprimaHelper } from "../../esprima/EsprimaHelper";
 import { generate as escodeGenerate } from 'escodegen';
-import { EsprimaVerse, EsprimaHtmlCoupletFactory, EsprimaCouplet } from "./EsprimaTypes";
+import { EsprimaVerse, EsprimaHtmlCoupletFactory, EsprimaCouplet } from "../../esprima/EsprimaTypes";
 
 export class EsprimaProgremInspectorHtmlFactory implements EsprimaHtmlCoupletFactory {
 
@@ -126,7 +126,7 @@ export class EsprimaProgremInspectorHtmlFactory implements EsprimaHtmlCoupletFac
 
         let paramCount = n.params.length;
         n.params.forEach((param, i) => {
-            let varName = AstHelper.patternToString(param);
+            let varName = EsprimaHelper.patternToString(param);
             let funcParam = this.buildNode(param);//HtmlHelper.span('func-param', varName);
             declStartItems.push(funcParam);
             if (i < paramCount - 1) {
@@ -250,7 +250,7 @@ export class EsprimaProgremInspectorHtmlFactory implements EsprimaHtmlCoupletFac
 
     protected buildIdentifier(node: BaseNode): HTMLElement {
         let n = node as Identifier;
-        let container = HtmlHelper.span('identifier', AstHelper.patternToString(n));
+        let container = HtmlHelper.span('identifier', EsprimaHelper.patternToString(n));
         return container;
     }
 

@@ -25,19 +25,6 @@ export interface GridChangeListener {fireGridChange: NewStateCallback};
 export interface LineChangeListener {fireLineChange: NewStateCallback};
 export interface FrameChangeListener {fireFrameChange: NewStateCallback};
 
-/*
-export interface ProgremScheduler {
-    subscribeCodeExecution(listener: CodeExecutionListener): void
-    subscribeGridChange(listener: GridChangeListener): void
-    subscribeLineChange(listener: LineChangeListener): void
-    subscribeFrameChange(listener: FrameChangeListener): void
-
-    reset(): ProgremState
-    current(): ProgremState
-    next(): ProgremState
-}
-*/
-
 class SimpleProgremScheduler implements ProgremScheduler {
     
     private state: ProgremState;

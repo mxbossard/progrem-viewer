@@ -1,8 +1,8 @@
-import { StyleDecorator, ProgremScheduler } from "./Types";
+import { StyleDecorator, ProgremScheduler } from "../../core/Types";
 import { BaseNode, VariableDeclarator, AssignmentExpression, Identifier } from "estree";
-import { AstHelper } from "./AstHelper";
+import { EsprimaHelper } from "../../esprima/EsprimaHelper";
 import { create as md5Create } from 'js-md5';
-import { ProgremInspectorView } from "./ProgremInspector";
+import { ProgremInspectorComponent } from "./ProgremInspectorComponent";
 
 export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
 
@@ -12,11 +12,11 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
         let varId;
         if (node.type === 'VariableDeclarator') {
             let n = node as VariableDeclarator;
-            varId = AstHelper.patternToString(n.id);
+            varId = EsprimaHelper.patternToString(n.id);
         }
         if (node.type === 'AssignmentExpression') {
             let n = node as AssignmentExpression;
-            varId = AstHelper.patternToString(n.left);
+            varId = EsprimaHelper.patternToString(n.left);
         }
         if (node.type === 'Identifier') {
             let n = node as Identifier;
@@ -48,8 +48,8 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
                     padding: 2px 5px;
                     border: 1px solid transparent;
                 }
-                .${ProgremInspectorView.EXECUTING_CLASS} .variable-${index}.identifier, 
-                .${ProgremInspectorView.EXECUTED_CLASS} .variable-${index}.identifier {
+                .${ProgremInspectorComponent.EXECUTING_CLASS} .variable-${index}.identifier, 
+                .${ProgremInspectorComponent.EXECUTED_CLASS} .variable-${index}.identifier {
                     background-color: ${color};
                     border: 1px solid black;
                 }

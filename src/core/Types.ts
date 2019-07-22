@@ -42,8 +42,8 @@ export interface ProgremScheduler {
     getProgrem(): ProgremCode<any>
 }
 
-export interface ProgremView {
-    buildView(scheduler: ProgremScheduler): HTMLElement
+export interface ProgremComponent {
+    renderHtml(): HTMLElement
 }
 
 export interface StyleDecorator<T> {

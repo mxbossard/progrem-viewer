@@ -3,44 +3,10 @@ import { Program, parseModule, ParseOptions } from 'esprima';
 import { walk as esprimaWalk, walkAddParent as esprimaWalkAddParent } from 'esprima-walk';
 import { generate as escodeGenerate } from 'escodegen';
 import { BaseNode, FunctionDeclaration, BlockStatement, IfStatement, ReturnStatement, Statement } from 'estree';
-import { ProgremState } from './SchedulingService';
-import { ProgremCode, ProgremFactory } from './Types';
+import { ProgremState } from '../core/SchedulingService';
 import { EsprimaVerseIteraor, EsprimaVerse, EsprimaCouplet, EsprimaProgremFactory, EsprimaProgrem } from './EsprimaTypes';
 import { EsprimaHelper } from './EsprimaHelper';
-import { FunctionDeclarationToHtmlTreeStore } from './HtmlTree';
-/*
-export class CodeStatement {
-    constructor(
-        public node: BaseNode,
-        //public code: string
-    ) {};
-}
-
-export interface CodeStatementFactory<T> {
-    build(param: T): CodeStatement;
-}
-
-export interface CodeIterator {
-    executeNext(): CodeStatement;
-    hasNext(): boolean;
-}
-
-export interface ProgremCode {
-    initialiserProgremFunction(): FunctionDeclaration
-    colorerProgremFunction(): FunctionDeclaration
-    iterator(state: ProgremState): CodeIterator;
-}
-
-class EsprimaCodeStatementFactory implements VerseInstructionFactory<BaseNode> {
-
-    build(param: BaseNode): EsprimaVerseInstruction {
-        if (param) 
-            return new EsprimaVerseInstruction(param);
-        
-        throw new Error('Unable to build non statement code !');
-    }
-}
-*/
+import { CodeService } from '../core/CodeService';
 
 class BasicEsprimaCodeIterator implements EsprimaVerseIteraor {
 
@@ -215,7 +181,7 @@ export class BasicEsprimaProgrem implements EsprimaProgrem {
     }
 }
 
-class BasicEsprimaProgremFactory implements EsprimaProgremFactory {
+export class BasicEsprimaProgremFactory implements EsprimaProgremFactory {
 
     buildProgrem(code: string): EsprimaProgrem {
         if (!code) {
@@ -255,25 +221,4 @@ class BasicEsprimaProgremFactory implements EsprimaProgremFactory {
         };
         return verse;
     }
-}
-
-export namespace CodeService {
-
-    export const progremFactory: ProgremFactory<any> = new BasicEsprimaProgremFactory();
-
-    export function loadProgrem(fileUrl: string): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const client = new XMLHttpRequest();
-            client.open('GET', fileUrl);
-            client.onload = () => {
-                let code = client.responseText;
-
-                console.log('CodeService: Progrem loaded successfully.', code);
-                resolve(code);
-            };
-            client.onerror = () => reject(client.statusText);
-            client.send();
-        });
-    }
-
 }
