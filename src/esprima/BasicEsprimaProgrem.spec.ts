@@ -1,8 +1,8 @@
 import 'jasmine';
 //import 'jasmine-ajax';
 import { generate as escodegenerate } from 'escodegen';
-import { ProgremState } from '../core/SchedulingService';
 import { CodeService } from '../core/CodeService';
+import { ProgremState } from '../core/Types';
 
 describe('BasicEsprimaCodeIterator', () => {
 

@@ -1,5 +1,4 @@
-import { ProgremState, CodeExecutionListener, GridChangeListener } from '../../core/SchedulingService';
-import { ProgremComponent, ProgremScheduler, HtmlCoupletFactory } from '../../core/Types';
+import { ProgremComponent, ProgremScheduler, HtmlCoupletFactory, ProgremState, CodeExecutionListener, GridChangeListener } from '../../core/Types';
 
 export class ProgremInspectorComponent implements ProgremComponent, CodeExecutionListener, GridChangeListener {
 

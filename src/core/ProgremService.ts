@@ -62,14 +62,6 @@ export namespace ProgremService {
                 HtmlHelper.defineCssRules('progrem-inspector-component', decoratorStyle);
             }
             
-            /*
-            let gridElement = document.querySelector('.progrem');
-            console.log('gridElement', gridElement);
-            let progremGrid = new BasicCanvasProgremGrid(screenConfig, progremConfig);
-            progremGrid.attach(gridElement);
-            progremGrid.clear();
-            scheduler.subscribeGridChange(progremGrid);
-            */
            let progremGridContainer = document.querySelector<HTMLElement>('.progrem-grid-component');
            if (progremGridContainer) {
                 let progremGridComponent = new ProgremGridComponent(screenConfig, progremConfig, scheduler, document);
@@ -84,7 +76,7 @@ export namespace ProgremService {
     function timer(timestamp: number) {
         window.requestAnimationFrame(timer);
 
-        if (timestamp - previousRepaintTime < 1500) {
+        if (timestamp - previousRepaintTime < 500) {
             return;
         }
 

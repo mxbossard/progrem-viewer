@@ -1,13 +1,17 @@
-import { ProgremComponent, ProgremScheduler } from "../../core/Types";
-import { GridChangeListener, ProgremState } from "../../core/SchedulingService";
+import { ProgremComponent, ProgremScheduler, StartIteratingCodeListener, GridChangeListener, ProgremState } from "../../core/Types";
 import { ScreenConfig } from "../../core/ScreenService";
 import { ProgremConfig } from "../../core/ProgremService";
 import { HtmlHelper } from "../../core/HtmlHelper";
+import { Observable, Subscription, Scheduler } from 'rxjs/Rx';
+import { scheduled, animationFrameScheduler, timer } from "rxjs";
+import { takeUntil, repeat, count, tap } from "rxjs/operators";
 
-export class ProgremGridComponent implements ProgremComponent, GridChangeListener {
+export class ProgremGridComponent implements ProgremComponent, StartIteratingCodeListener, GridChangeListener {
     
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
+    private subscription: Subscription | null = null;
+    private blinkInterval = 200;
     
     constructor(
         private screenConfig: ScreenConfig, 
@@ -28,16 +32,47 @@ export class ProgremGridComponent implements ProgremComponent, GridChangeListene
         this.ctx = ctx;
         this.clear();
 
+        scheduler.subscribeStartIteratingCode(this);
         scheduler.subscribeGridChange(this);
     }
 
     renderHtml(): HTMLElement {
         let container = HtmlHelper.span('progrem-grid', this.canvas);
+
         return container;
     }
+
+    protected colorCurrentPixel(state: ProgremState, color: string): void {
+        let boxSize = this.screenConfig.boxSize;
+        let c = state.colonne;
+        let l = state.ligne;
+
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(c * boxSize, l * boxSize, boxSize, boxSize);
+    }
+
+    protected blinkCurrentPixel(state: ProgremState, incremnt: number) {
+        let color = 'black';
+        if (incremnt % 2 === 0) {
+            color = 'white';
+        }
+        this.colorCurrentPixel(state, color);
+        
+    }
     
+    fireStartIteratingCode (state: ProgremState): void {
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+        }
+        this.subscription = Observable.interval(this.blinkInterval, animationFrameScheduler).subscribe(t => {
+            this.blinkCurrentPixel(state, t);
+        });
+    }
+
     fireGridChange (state: ProgremState): void {
-        console.log('grid change: ', state);
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+        }
 
         let boxSize = this.screenConfig.boxSize;
         let c = state.colonne;

@@ -10,6 +10,7 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
 
     decorate(node: BaseNode, element: HTMLElement): HTMLElement {
         let varId;
+        /*
         if (node.type === 'VariableDeclarator') {
             let n = node as VariableDeclarator;
             varId = EsprimaHelper.patternToString(n.id);
@@ -18,6 +19,7 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
             let n = node as AssignmentExpression;
             varId = EsprimaHelper.patternToString(n.left);
         }
+        */
         if (node.type === 'Identifier') {
             let n = node as Identifier;
             varId = n.name;
@@ -45,8 +47,9 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
             //console.log('building color #', id, '=>', color);
             style += `
                 .variable {
-                    padding: 2px 5px;
+                    padding: 0.1em 0.5em 0.1em 0.5em;
                     border: 1px solid transparent;
+                    border-radius: 0.8em;
                 }
                 .${ProgremInspectorComponent.EXECUTING_CLASS} .variable-${index}.identifier, 
                 .${ProgremInspectorComponent.EXECUTED_CLASS} .variable-${index}.identifier {

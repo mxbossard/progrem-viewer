@@ -1,35 +1,13 @@
 import { ProgremConfig } from "./ProgremService";
 import { EvalScope } from "./EvalService";
-import { ProgremScheduler, VerseIterator, ProgremCode, ProgremVerse } from "./Types";
-
-export class ProgremState {
-
-    public readonly evalScope = new EvalScope;
-
-    constructor(
-        public readonly colonne: number,
-        public readonly ligne: number,
-        public readonly frame: number,
-        public contexte: object,
-        public readonly verse: ProgremVerse<any> | null,
-    ) {}
-
-    public eval(expr: string): any {
-        return this.evalScope.globalEval(expr);
-    }
-}
-
-type NewStateCallback = (state: ProgremState) => void;
-export interface CodeExecutionListener {fireCodeExecution: NewStateCallback};
-export interface GridChangeListener {fireGridChange: NewStateCallback};
-export interface LineChangeListener {fireLineChange: NewStateCallback};
-export interface FrameChangeListener {fireFrameChange: NewStateCallback};
+import { ProgremScheduler, VerseIterator, ProgremCode, ProgremVerse, StartIteratingCodeListener, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener, ProgremState } from "./Types";
 
 class SimpleProgremScheduler implements ProgremScheduler {
     
     private state: ProgremState;
     private codeIterator: VerseIterator<any> | null = null;
 
+    private startIteratingCodeListeners: StartIteratingCodeListener[] = [];
     private codeExecutionListeners: CodeExecutionListener[] = [];
     private gridChangeListeners: GridChangeListener[] = [];
     private lineChangeListeners: LineChangeListener[] = [];
@@ -38,6 +16,10 @@ class SimpleProgremScheduler implements ProgremScheduler {
     constructor(private config: ProgremConfig, private code: ProgremCode<any>) {
         this.state = this.reset();
     }
+
+    subscribeStartIteratingCode(listener: StartIteratingCodeListener): void {
+        this.startIteratingCodeListeners.push(listener);
+    }    
 
     subscribeCodeExecution(listener: CodeExecutionListener): void {
         this.codeExecutionListeners.push(listener);
@@ -75,6 +57,7 @@ class SimpleProgremScheduler implements ProgremScheduler {
 
         if (this.codeIterator == null) {
             this.codeIterator = this.code.iterator(this.state);
+            this.startIteratingCodeListeners.map(l => l.fireStartIteratingCode(this.state));
         }
 
         //console.log('hasNext:', this.codeIterator.hasNext());
@@ -131,8 +114,9 @@ class SimpleProgremScheduler implements ProgremScheduler {
         }
 
         this.state = newState;
-        this.codeIterator = this.code.iterator(newState);
-
+        //this.codeIterator = this.code.iterator(newState);
+        this.codeIterator = null;
+        
         return newState;
     }
 

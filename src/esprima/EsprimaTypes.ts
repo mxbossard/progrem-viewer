@@ -1,6 +1,5 @@
-import { ProgremVerse, VerseIterator, ProgremCode, ProgremCouplet, ProgremFactory, HtmlCoupletFactory } from "../core/Types";
+import { ProgremVerse, VerseIterator, ProgremCode, ProgremCouplet, ProgremFactory, HtmlCoupletFactory, ProgremState } from "../core/Types";
 import { BaseNode, FunctionDeclaration } from "estree";
-import { ProgremState } from "../core/SchedulingService";
 
 export interface EsprimaProgrem extends ProgremCode<BaseNode> {
     initialiserProgremFunction(): EsprimaCouplet

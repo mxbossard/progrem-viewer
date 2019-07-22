@@ -3,10 +3,10 @@ import { Program, parseModule, ParseOptions } from 'esprima';
 import { walk as esprimaWalk, walkAddParent as esprimaWalkAddParent } from 'esprima-walk';
 import { generate as escodeGenerate } from 'escodegen';
 import { BaseNode, FunctionDeclaration, BlockStatement, IfStatement, ReturnStatement, Statement } from 'estree';
-import { ProgremState } from '../core/SchedulingService';
 import { EsprimaVerseIteraor, EsprimaVerse, EsprimaCouplet, EsprimaProgremFactory, EsprimaProgrem } from './EsprimaTypes';
 import { EsprimaHelper } from './EsprimaHelper';
 import { CodeService } from '../core/CodeService';
+import { ProgremState } from '../core/Types';
 
 class BasicEsprimaCodeIterator implements EsprimaVerseIteraor {
 

@@ -1,4 +1,4 @@
-import { ProgremState, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener } from "./SchedulingService";
+import { EvalScope } from "./EvalService";
 
 export interface ProgremVerse<AstBaseType> {
     node: AstBaseType
@@ -31,7 +31,32 @@ export interface ProgremCode<AstBaseType> {
     iterator(state: ProgremState): VerseIterator<AstBaseType>
 }
 
+export class ProgremState {
+
+    public readonly evalScope = new EvalScope;
+
+    constructor(
+        public readonly colonne: number,
+        public readonly ligne: number,
+        public readonly frame: number,
+        public contexte: object,
+        public readonly verse: ProgremVerse<any> | null,
+    ) {}
+
+    public eval(expr: string): any {
+        return this.evalScope.globalEval(expr);
+    }
+}
+
+type NewStateCallback = (state: ProgremState) => void;
+export interface StartIteratingCodeListener {fireStartIteratingCode: NewStateCallback};
+export interface CodeExecutionListener {fireCodeExecution: NewStateCallback};
+export interface GridChangeListener {fireGridChange: NewStateCallback};
+export interface LineChangeListener {fireLineChange: NewStateCallback};
+export interface FrameChangeListener {fireFrameChange: NewStateCallback};
+
 export interface ProgremScheduler {
+    subscribeStartIteratingCode(listener: StartIteratingCodeListener): void
     subscribeCodeExecution(listener: CodeExecutionListener): void
     subscribeGridChange(listener: GridChangeListener): void
     subscribeLineChange(listener: LineChangeListener): void
