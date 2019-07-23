@@ -72,3 +72,17 @@ div.grid {
     margin: 0.1em 0.5em 0.1em 1em;
     border: 1px solid black;
 }   
+
+
+/* progrem-editor-component */
+
+.progrem-editor-component {
+    text-align: left;
+    margin-left: 1em;
+}
+
+.progrem-editor-component textarea {
+    width: 1200px;
+    height: 250px;
+    font-size: 1.3em;
+}

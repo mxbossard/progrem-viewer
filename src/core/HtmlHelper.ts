@@ -34,7 +34,6 @@ export abstract class HtmlHelper {
 
         if (typeof content === 'string') {
             elt.innerText = content;
-            console.log(`content: [${content}]`);
         } else if (content instanceof HTMLElement) {
             elt.appendChild(content);
         } else if (Array.isArray(content)) {

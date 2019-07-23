@@ -46,7 +46,6 @@ export class ColorVariableScopeDecorator implements StyleDecorator<string> {
                 }
             `;
         });
-        console.log('style', style);
         return style;
     }
 }

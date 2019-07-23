@@ -73,4 +73,17 @@ div.grid {
     border: 1px solid black;
 }   
 
+
+/* progrem-editor-component */
+
+.progrem-editor-component {
+    text-align: left;
+    margin-left: 1em;
+}
+
+.progrem-editor-component textarea {
+    width: 1200px;
+    height: 250px;
+    font-size: 1.3em;
+}
 /*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJidW5kbGUubWluLmNzcyIsInNvdXJjZVJvb3QiOiIifQ==*/
