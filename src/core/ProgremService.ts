@@ -3,7 +3,7 @@ import { SchedulingService } from './SchedulingService';
 import { ProgremInspectorComponent } from '../components/progremInspector/ProgremInspectorComponent';
 import { ScreenConfig } from './ScreenService';
 import { BaseNode } from 'estree';
-import { StyleDecoratorAggregation, ProgremScheduler, ProgremCode } from './Types';
+import { StyleDecoratorAggregation, ProgremScheduler, ProgremCode, ProgremTempo } from './Types';
 import { PadVerseDecorator, ColorVerseVariableDecorator } from '../components/progremInspector/EsprimaProgremInspectorStyleDecorators';
 import { HtmlHelper } from './HtmlHelper';
 import { EsprimaProgremInspectorHtmlFactory } from '../components/progremInspector/EsprimaProgremInspectorHtmlFactory';
@@ -13,6 +13,7 @@ import { VariableScopeComponent } from '../components/variableScope/VariableScop
 import { EsprimaVariableScopeHtmlFactory } from '../components/variableScope/EsprimaVariableScopeHtmlFactory';
 import { ColorVariableScopeDecorator } from '../components/variableScope/EsprimaVariableScopeStyleDecorators';
 import { ProgremEditorComponent } from '../components/progremEditor/ProgremEditorComponent';
+import { Observable, BehaviorSubject } from 'rxjs';
 
 export class ProgremConfig {
     constructor(
@@ -30,6 +31,13 @@ export namespace ProgremService {
 
     var previousRepaintTime = 0;
     var scheduler: ProgremScheduler;
+    var progremAnimationSpeed = 2;
+    var progremAnimationIntervals = [60000, 5000, 1000, 500, 100, 10, 1];
+    var progremMode = ProgremTempo.ByLine;
+
+    export function currentScheduler(): ProgremScheduler {
+        return scheduler;
+    }
 
     export function buildProgremGridComponent(screenConfig: ScreenConfig, progremConfig: ProgremConfig, container: HTMLElement): void {
         container.innerHTML = '';
@@ -120,6 +128,18 @@ export namespace ProgremService {
         }
     }
 
+    export function buildControlPanelComponent() {
+        let speedControlElement = document.querySelector(`.control-panel-component .speed-selector`)as HTMLInputElement;
+        speedControlElement.value = String(progremAnimationSpeed);
+        let speedSelectorObservable = Observable.fromEvent(speedControlElement, 'change');
+        speedSelectorObservable.subscribe(event => progremAnimationSpeed = Number((event.target as HTMLInputElement).value));
+
+        let modeControlElement = document.querySelector(`.control-panel-component .mode-selector`)as HTMLInputElement;
+        modeControlElement.value = String(scheduler.tempo);
+        let modeSelectorObservable = Observable.fromEvent(modeControlElement, 'change');
+        modeSelectorObservable.subscribe(event => currentScheduler().tempo = Number((event.target as HTMLInputElement).value));
+    }
+
     export function buildProgrem(url: string, screenConfig: ScreenConfig, progremConfig: ProgremConfig) {
         let progremScript = document.createElement('script');
         progremScript.classList.add('progrem-script-tag')
@@ -134,8 +154,10 @@ export namespace ProgremService {
 
             buildProgremViewer(progremCode, screenConfig, progremConfig)
 
-            buildProgremEditorComponent(progremCode, screenConfig, progremConfig);
+            buildControlPanelComponent();
 
+            buildProgremEditorComponent(progremCode, screenConfig, progremConfig);
+            
             timer(0);
         });
     }
@@ -143,7 +165,7 @@ export namespace ProgremService {
     function timer(timestamp: number) {
         window.requestAnimationFrame(timer);
 
-        if (timestamp - previousRepaintTime < 1000) {
+        if (timestamp - previousRepaintTime < progremAnimationIntervals[progremAnimationSpeed]) {
             return;
         }
 

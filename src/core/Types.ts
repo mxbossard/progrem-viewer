@@ -1,4 +1,5 @@
 import { EvalScope } from "./EvalService";
+import { setScheduler } from "bluebird";
 
 export interface ProgremVerse<AstBaseType> {
     node: AstBaseType
@@ -55,6 +56,13 @@ export interface GridChangeListener {fireGridChange: NewStateCallback};
 export interface LineChangeListener {fireLineChange: NewStateCallback};
 export interface FrameChangeListener {fireFrameChange: NewStateCallback};
 
+export enum ProgremTempo {
+    ByVerse = 0,
+    ByPixel,
+    ByLine,
+    ByFrame
+}
+
 export interface ProgremScheduler {
     subscribeStartIteratingCode(listener: StartIteratingCodeListener): void
     subscribeCodeExecution(listener: CodeExecutionListener): void
@@ -63,8 +71,9 @@ export interface ProgremScheduler {
     subscribeFrameChange(listener: FrameChangeListener): void
     reset(): ProgremState
     current(): ProgremState
-    next(): ProgremState
+    next(): ProgremState[]
     getProgrem(): ProgremCode<any>
+    tempo: ProgremTempo
 }
 
 export interface ProgremComponent {

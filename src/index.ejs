@@ -7,12 +7,10 @@
 <body>
     <h1 class="titre"></h1>
 
-    <div class="progrem-grid-component">
+    <div class="progrem-grid-component"></div>
 
-    </div>
-
+    <!--
     <br/><br/>
-
     <select class="peinture">
         <option value="instruction">Peinture par instruction</option>
         <option value="pixel" selected="selected">Peinture par pixel</option>
@@ -23,6 +21,13 @@
     <button class="peindre">Repeindre</button>
 
     <br/><br/>
+    -->
+
+    <div class="control-panel-component">
+        <div><label>Mode:</label><input class="mode-selector" type="range" min="0" max="3" step="1"></div>
+        <div><label>Vitesse:</label><input class="speed-selector" type="range" min="0" max="6" step="1"></div>
+        
+    </div>
 
     <div class="grid">
         <div class="progrem-inspector-component"></div>
@@ -37,7 +42,7 @@
 
         <div class="colorer-progrem-editor">
             <p class="function-declaration">function colorerProgrem(colonne, ligne, contexte) {</p>
-                <textarea>
+                <textarea id="colorer-progrem-editor-id">
         
                 </textarea>
             <p class="function-end">}</p>
@@ -45,7 +50,7 @@
 
         <div class="init-progrem-editor">
             <p class="function-declaration">function initialiserProgrem(cadreLargeur, cadreHauteur) {</p>
-            <textarea>
+            <textarea id="init-progrem-editor-id">
 
             </textarea>
             <p class="function-end">}</p>
@@ -53,7 +58,7 @@
 
         <div class="code-libre-editor">
             <p>Code libre</p>
-            <textarea>
+            <textarea id="code-libre-editor-id">
     
             </textarea>
         </div>

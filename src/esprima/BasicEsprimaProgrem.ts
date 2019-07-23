@@ -201,7 +201,7 @@ export class BasicEsprimaProgremFactory implements EsprimaProgremFactory {
             functionRootNode: node,
             verses: esprimaVerses
         }
-        console.log('Built couplet:', couplet);
+        //console.log('Built couplet:', couplet);
         return couplet;
     }
 
