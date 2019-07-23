@@ -3,6 +3,7 @@ import { EsprimaHelper } from "../../esprima/EsprimaHelper";
 import { VariableDeclaration, AssignmentExpression, FunctionDeclaration } from "estree";
 import { ColorService } from "../../core/ColorService";
 import { generate as escodeGenerate } from 'escodegen';
+import { EsprimaVariableScopeHtmlFactory } from "./EsprimaVariableScopeHtmlFactory";
 
 export class VariableScopeComponent implements ProgremComponent, CodeExecutionListener, GridChangeListener {
 
@@ -11,7 +12,7 @@ export class VariableScopeComponent implements ProgremComponent, CodeExecutionLi
     
     constructor(
         private scheduler: ProgremScheduler,
-        private htmlFactory: HtmlCoupletFactory<any>
+        private htmlFactory: EsprimaVariableScopeHtmlFactory
     ) {
         scheduler.subscribeCodeExecution(this);
         scheduler.subscribeGridChange(this);
@@ -29,15 +30,13 @@ export class VariableScopeComponent implements ProgremComponent, CodeExecutionLi
         }
 
         let htmlVerse = this.htmlFactory.getHtmlVerse(state.verse);
-        if (this.htmlContainer && htmlVerse) {
-            this.htmlContainer.appendChild(htmlVerse);
-        }
+        // if (this.htmlContainer && htmlVerse) {
+        //     this.htmlContainer.appendChild(htmlVerse);
+        // }
     }
 
     fireGridChange(state: ProgremState): void {
-        if (this.htmlContainer) {
-            this.htmlContainer.innerHTML = '';
-        }
+        this.htmlFactory.clearView();
     }
 
 }

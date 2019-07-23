@@ -17,6 +17,8 @@ export class EsprimaVariableScopeHtmlFactory implements EsprimaHtmlCoupletFactor
     ) {}
 
     buildCouplet(): HTMLElement {
+        let container = HtmlHelper.span('variable-scope-component')
+
         // FIXME il faudrait parcourir l'arbre AST avec un walker ou un truc du genre.
         // FIXME gros hack du système de HtmlFactory et de Decorator pour realiser ce composant.
         // Build all VariableHint which will be added in view container one by one by getHtmlVerse()
@@ -26,11 +28,14 @@ export class EsprimaVariableScopeHtmlFactory implements EsprimaHtmlCoupletFactor
             varHints.forEach((varHint, varName) => {
                 let decorated = this.decorator.decorate(varName, varHint);
                 decoratedVarHints.push(decorated);
+                container.appendChild(decorated);
             })
             this.varHintByVersesMap.set(v.node, decoratedVarHints);
         });
 
-        return HtmlHelper.span('variable-scope-component');
+        this.clearView();
+
+        return container;
     }    
     
     getHtmlVerse(verse: EsprimaVerse): HTMLElement|undefined {
@@ -42,6 +47,7 @@ export class EsprimaVariableScopeHtmlFactory implements EsprimaHtmlCoupletFactor
         if (!htmlElements || htmlElements.length === 0) {
             return;
         }
+        
 
         let state = this.scheduler.current();
         let valuesMap = EsprimaHelper.getVariableValues(state, verse.node);
@@ -50,8 +56,20 @@ export class EsprimaVariableScopeHtmlFactory implements EsprimaHtmlCoupletFactor
             varHintUpdater(valuesMap);
         }
         
-        let verseContainer = HtmlHelper.span('verse-container', htmlElements);
-        return verseContainer;
+        // Show elements
+        htmlElements.forEach(hint => hint.classList.remove('hidden'));
+
+        //let verseContainer = HtmlHelper.span('verse-container', htmlElements);
+        //return verseContainer;
+    }
+
+    public clearView(): void {
+        // Hide elements
+        this.varHintByVersesMap.forEach(hints => hints.forEach(hint => hint.classList.add('hidden')));
+        // Reset value
+        this.varHintUpdaterMap.forEach((varHintUpdater, key) => {
+            varHintUpdater(new Map());
+        });
     }
 
     /**
