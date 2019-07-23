@@ -16,10 +16,7 @@ export class EsprimaProgremInspectorHtmlFactory implements EsprimaHtmlCoupletFac
 
     buildCouplet(): HTMLElement {
         let htmlCouplet = this.buildNode(this.couplet.functionRootNode);
-        htmlCouplet.classList.add('progrem-inspector');
-        //let htmlVerses = this.couplet.verses.map(v => this.buildNode(v.node));
-        //let htmlCouplet = HtmlHelper.span('couplet', htmlVerses);
-        //console.log('htmlVersesMap:', this.htmlVersesMap);
+        htmlCouplet.classList.add('progrem-inspector-component');
         return htmlCouplet;
     }
 

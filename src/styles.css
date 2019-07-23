@@ -1,0 +1,74 @@
+
+body {
+    margin: 0;
+    overflow-x: hidden;
+    padding: 0;
+    text-align: center;
+}
+
+div.grid {
+    display: grid;
+}
+
+/* progrem-grid-component */
+
+.progrem-grid-component canvas {
+    border: 32px ridge maroon;
+}
+
+/* progrem-inspector-component */
+
+.progrem-inspector-component {
+    grid-column-start: 1;
+    grid-column-end: 4;
+    grid-row: 1;
+    padding: 0;
+    overflow: hidden;
+    text-align: left;
+    font-size: 1em;
+}
+
+.progrem-inspector-component * {
+    display: inline-block;
+} 
+
+.progrem-inspector-component .operator {
+    margin: 0 10px;
+}
+
+.progrem-inspector-component .verse-container {
+    display: block;
+}
+
+.progrem-inspector-component .verse-content {
+    padding: 0.1em 0.5em 0.1em 1em;
+    border: 1px solid transparent;
+}
+
+.progrem-inspector-component .verse-executing .verse-content {
+    background-color: yellow;
+}
+
+.progrem-inspector-component .verse-executed .verse-content {
+    background-color: whitesmoke;
+}
+
+/* variable-scope-component */
+
+.variable-scope-component {
+    grid-column-start: 5;
+    grid-column-end: 6;
+    grid-row: 1;
+    padding: 0;
+    overflow: hidden;
+    text-align: left;
+    font-size: 1em;
+    width: 400px;
+}
+
+.variable-scope-component .variable {
+    display: block;
+    padding: 0.1em 0.5em 0.1em 1em;
+    margin: 0.1em 0.5em 0.1em 1em;
+    border: 1px solid black;
+}   

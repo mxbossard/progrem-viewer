@@ -2,6 +2,8 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Visualizer = require('webpack-visualizer-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const extractCSS = new ExtractTextPlugin('bundle.min.css')
 
 module.exports = {
   devtool: 'inline-source-map',
@@ -37,6 +39,9 @@ module.exports = {
   },
   entry: {
     index: './src/index.ts',
+    'bundle.css': [
+      __dirname + '/src/styles.css',
+    ]
   },
   module: {
     rules: [
@@ -44,15 +49,26 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/
+      },
+      {
+        test: /\.css$/i,
+        use: extractCSS.extract({
+          use: {
+            loader: 'css-loader',
+            options: {
+            }
+          }
+        })
       }
     ]
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ]
+    extensions: ['.tsx', '.ts', '.js', '.css']
   },
   plugins: [
     new webpack.HashedModuleIdsPlugin(),
-    new HtmlWebpackPlugin({template: 'src/index.ejs'}),
-    new Visualizer({filename: './statistics.html'})
+    new HtmlWebpackPlugin({ template: 'src/index.ejs' }),
+    new Visualizer({ filename: './statistics.html' }),
+    extractCSS
   ],
 };

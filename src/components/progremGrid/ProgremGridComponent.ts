@@ -53,7 +53,7 @@ export class ProgremGridComponent implements ProgremComponent, StartIteratingCod
     protected blinkCurrentPixel(state: ProgremState, incremnt: number) {
         let color = 'black';
         if (incremnt % 2 === 0) {
-            color = 'white';
+            color = 'antiquewhite';
         }
         this.colorCurrentPixel(state, color);
         
@@ -89,6 +89,8 @@ export class ProgremGridComponent implements ProgremComponent, StartIteratingCod
         let width = this.screenConfig.boxSize * this.progremConfig.colonnes;
         let height = this.screenConfig.boxSize * this.progremConfig.lignes;
         this.ctx.clearRect(0, 0, width, height);
+        this.ctx.fillStyle = 'antiquewhite';
+        this.ctx.fillRect(0, 0, width, height);
     }
 
 }
