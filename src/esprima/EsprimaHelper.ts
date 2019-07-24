@@ -1,6 +1,5 @@
 import { Pattern, Identifier, BaseNode, VariableDeclaration, AssignmentExpression, FunctionDeclaration, Node } from "estree";
 import { ProgremState } from "../core/Types";
-import { stringify } from "querystring";
 
 export type NodeWithParent = Node & { parent?: Node };
 

@@ -23,9 +23,10 @@ class BasicEsprimaCodeIterator implements EsprimaVerseIteraor {
     private declareProgremArguments() {
         let _colonne = this.state.colonne;
         let _ligne = this.state.ligne;
+        let _frame = this.state.frame;
         let _contexte = this.state.contexte;
 
-        this.state.eval('var colonne = ' + _colonne + ', ligne = ' + _ligne + ';');
+        this.state.eval('var colonne = ' + _colonne + ', ligne = ' + _ligne + ', frame = ' + _frame + ';');
         this.state.eval('var contexte = ' + JSON.stringify(_contexte));
     }
 
@@ -137,11 +138,16 @@ export class BasicEsprimaProgrem implements EsprimaProgrem {
 
     private esprimaProgram: Program;
 
+    private initCouplet: EsprimaCouplet;
+    private colorerCouplet: EsprimaCouplet;
+
     constructor(code: string) {
         let config: ParseOptions = {
             comment: true,
         }
         this.esprimaProgram = parseModule(code, config);
+        this.initCouplet = this.walkProgremCouplet('initialiserProgrem');
+        this.colorerCouplet = this.walkProgremCouplet('colorerProgrem');
     }
 
     protected walkProgremCouplet(functionName: string): EsprimaCouplet {
@@ -169,11 +175,11 @@ export class BasicEsprimaProgrem implements EsprimaProgrem {
     }
 
     public initialiserProgremFunction(): EsprimaCouplet {
-        return this.walkProgremCouplet('initialiserProgrem');
+        return this.initCouplet;
     }
 
     public colorerProgremFunction(): EsprimaCouplet {
-        return this.walkProgremCouplet('colorerProgrem');
+        return this.colorerCouplet;
     }
 
     public iterator(state: ProgremState): EsprimaVerseIteraor {

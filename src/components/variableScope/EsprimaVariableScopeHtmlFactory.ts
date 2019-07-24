@@ -47,7 +47,6 @@ export class EsprimaVariableScopeHtmlFactory implements EsprimaHtmlCoupletFactor
         if (!htmlElements || htmlElements.length === 0) {
             return;
         }
-        
 
         let state = this.scheduler.current();
         let valuesMap = EsprimaHelper.getVariableValues(state, verse.node);

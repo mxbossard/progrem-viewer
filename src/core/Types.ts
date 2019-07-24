@@ -48,7 +48,7 @@ export class ProgremState {
         public readonly colonne: number,
         public readonly ligne: number,
         public readonly frame: number,
-        public contexte: object,
+        public readonly contexte: object,
         public readonly verse: ProgremVerse<any> | null,
     ) {}
 

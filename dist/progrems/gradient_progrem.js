@@ -7,6 +7,7 @@ function initialiserProgrem(config, initContexte) {
 }
 
 function colorerProgrem(colonne, ligne, frame, contexte) {
+    config.titre = 'Dégradé de couleur';
     redColor = Math.abs(frame * 16 % 510 - 254);
     color = rgbColor(redColor, colonne * 255 / 17, ligne * 255 / 17);
     return color;

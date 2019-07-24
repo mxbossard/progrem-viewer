@@ -26,7 +26,10 @@ export namespace ProgremService {
     var progremAnimationSpeed = 2;
     var progremAnimationIntervals = [60000, 5000, 1000, 500, 100, 10, 1];
     var progremMode = ProgremTempo.ByLine;
-    var defaultProgremConfig = new ProgremConfig('Sans titre', 17, 17, 1);
+
+    export function buildDefaultConfig(): ProgremConfig {
+        return new ProgremConfig('Sans titre', 17, 17, 1);
+    }
 
     export function currentScheduler(): ProgremScheduler {
         return scheduler;
@@ -76,7 +79,7 @@ export namespace ProgremService {
         HtmlHelper.defineCssRules('variable-scope-component', decoratorStyle);
     }
 
-    export function buildProgremEditorComponent(progremCode: ProgremCode<any>, screenConfig: ScreenConfig, progremConfig: ProgremConfig): void {
+    export function buildProgremEditorComponent(progremCode: ProgremCode<any>, screenConfig: ScreenConfig): void {
         let progremEditorComponent = new ProgremEditorComponent();
         progremEditorComponent.attach(document);
         progremEditorComponent.loadProgrem(progremCode);
@@ -94,7 +97,7 @@ export namespace ProgremService {
             if (bodyElement) {
                 bodyElement.appendChild(scriptElement);
             }
-            buildProgremViewer(progremCode, screenConfig, progremConfig)
+            buildProgremViewer(progremCode, screenConfig, buildDefaultConfig())
         });
     }
 
@@ -138,7 +141,7 @@ export namespace ProgremService {
     }
 
     export function buildProgrem(url: string, screenConfig: ScreenConfig) {
-        let progremConfig = defaultProgremConfig;
+        let progremConfig = buildDefaultConfig();
         let progremScript = document.createElement('script');
         progremScript.classList.add('progrem-script-tag')
         progremScript.src = url;
@@ -154,7 +157,7 @@ export namespace ProgremService {
 
             buildControlPanelComponent();
 
-            buildProgremEditorComponent(progremCode, screenConfig, progremConfig);
+            buildProgremEditorComponent(progremCode, screenConfig);
             
             timer(0);
         });

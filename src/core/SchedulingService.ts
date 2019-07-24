@@ -65,8 +65,8 @@ class SimpleProgremScheduler implements ProgremScheduler {
             //console.log('hasNext:', this.codeIterator.hasNext());
 
             if (this.codeIterator.hasNext()) {
-                let statement = this.codeIterator.executeNext();
-                let newState = new ProgremState(this.state.colonne, this.state.ligne, this.state.frame, this.state.contexte, statement);
+                let verse = this.codeIterator.executeNext();
+                let newState = new ProgremState(this.state.colonne, this.state.ligne, this.state.frame, this.state.contexte, verse);
                 this.state = newState;
                 this.codeExecutionListeners.map(l => l.fireCodeExecution(newState));
                 return [newState];
