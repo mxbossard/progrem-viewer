@@ -1,6 +1,4 @@
-import { ProgremConfig } from "./ProgremService";
-import { EvalScope } from "./EvalService";
-import { ProgremScheduler, VerseIterator, ProgremCode, ProgremVerse, StartIteratingCodeListener, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener, ProgremState, ProgremTempo } from "./Types";
+import { ProgremScheduler, VerseIterator, ProgremCode, ProgremVerse, StartIteratingCodeListener, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener, ProgremState, ProgremTempo, ProgremConfig } from "./Types";
 
 class SimpleProgremScheduler implements ProgremScheduler {
     
@@ -40,9 +38,10 @@ class SimpleProgremScheduler implements ProgremScheduler {
     }
 
     reset(): ProgremState {
+        let initialContexte = {};
         // Call just evaluated initialiserProgrem function
         // @ts-ignore
-        let initialContexte: object = initialiserProgrem(this.config.colonnes, this.config.lignes);
+        initialiserProgrem(this.config, initialContexte);
         console.log('Loaded initial contexte: ', initialContexte);
         let state = new ProgremState(0, 0, 0, initialContexte, null);
         return state;
@@ -89,19 +88,19 @@ class SimpleProgremScheduler implements ProgremScheduler {
             _colonne ++;
             notifyPixelChange = true;
 
-            if (_colonne >= this.config.colonnes) {
+            if (_colonne >= this.config.nombreColonnes) {
                 _colonne = 0;
                 _ligne ++;
                 notifyLineChange = true;
             }
 
-            if (_ligne >= this.config.lignes) {
+            if (_ligne >= this.config.nombreLignes) {
                 _ligne = 0;
                 _frame ++;
                 notifyFrameChange = true;
             }
 
-            if (_frame > this.config.frames) {
+            if (_frame >= this.config.nombreFrames) {
                 _frame = 0;
             }
 

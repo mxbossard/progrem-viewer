@@ -3,7 +3,7 @@ import { SchedulingService } from './SchedulingService';
 import { ProgremInspectorComponent } from '../components/progremInspector/ProgremInspectorComponent';
 import { ScreenConfig } from './ScreenService';
 import { BaseNode } from 'estree';
-import { StyleDecoratorAggregation, ProgremScheduler, ProgremCode, ProgremTempo } from './Types';
+import { StyleDecoratorAggregation, ProgremScheduler, ProgremCode, ProgremTempo, ProgremConfig } from './Types';
 import { PadVerseDecorator, ColorVerseVariableDecorator } from '../components/progremInspector/EsprimaProgremInspectorStyleDecorators';
 import { HtmlHelper } from './HtmlHelper';
 import { EsprimaProgremInspectorHtmlFactory } from '../components/progremInspector/EsprimaProgremInspectorHtmlFactory';
@@ -14,14 +14,6 @@ import { EsprimaVariableScopeHtmlFactory } from '../components/variableScope/Esp
 import { ColorVariableScopeDecorator } from '../components/variableScope/EsprimaVariableScopeStyleDecorators';
 import { ProgremEditorComponent } from '../components/progremEditor/ProgremEditorComponent';
 import { Observable, BehaviorSubject } from 'rxjs';
-
-export class ProgremConfig {
-    constructor(
-        public readonly colonnes: number,
-        public readonly lignes: number,
-        public readonly frames: number,
-    ) { }
-}
 
 export abstract class ProgremHelper {
 
@@ -34,6 +26,7 @@ export namespace ProgremService {
     var progremAnimationSpeed = 2;
     var progremAnimationIntervals = [60000, 5000, 1000, 500, 100, 10, 1];
     var progremMode = ProgremTempo.ByLine;
+    var defaultProgremConfig = new ProgremConfig('Sans titre', 17, 17, 1);
 
     export function currentScheduler(): ProgremScheduler {
         return scheduler;
@@ -111,6 +104,10 @@ export namespace ProgremService {
         (window as any).eval(initProgremFunctionCode);
 
         scheduler = SchedulingService.buildProgremScheduler(progremConfig, progremCode);
+        const titre = document.querySelector('.titre');
+        if (titre) {
+            titre.innerHTML = progremConfig.titre;
+        }
 
         let progremGridContainer = document.querySelector<HTMLElement>('.progrem-grid-component');
         if (progremGridContainer) {
@@ -140,7 +137,8 @@ export namespace ProgremService {
         modeSelectorObservable.subscribe(event => currentScheduler().tempo = Number((event.target as HTMLInputElement).value));
     }
 
-    export function buildProgrem(url: string, screenConfig: ScreenConfig, progremConfig: ProgremConfig) {
+    export function buildProgrem(url: string, screenConfig: ScreenConfig) {
+        let progremConfig = defaultProgremConfig;
         let progremScript = document.createElement('script');
         progremScript.classList.add('progrem-script-tag')
         progremScript.src = url;
@@ -151,8 +149,8 @@ export namespace ProgremService {
 
         CodeService.loadProgrem(url).then(code => {
             let progremCode = CodeService.progremFactory.buildProgrem(code);
-
-            buildProgremViewer(progremCode, screenConfig, progremConfig)
+            
+            buildProgremViewer(progremCode, screenConfig, progremConfig);
 
             buildControlPanelComponent();
 

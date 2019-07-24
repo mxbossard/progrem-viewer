@@ -1,6 +1,5 @@
-import { ProgremComponent, ProgremScheduler, StartIteratingCodeListener, GridChangeListener, ProgremState } from "../../core/Types";
+import { ProgremComponent, ProgremScheduler, StartIteratingCodeListener, GridChangeListener, ProgremState, ProgremConfig } from "../../core/Types";
 import { ScreenConfig } from "../../core/ScreenService";
-import { ProgremConfig } from "../../core/ProgremService";
 import { HtmlHelper } from "../../core/HtmlHelper";
 import { Observable, Subscription } from 'rxjs/Rx';
 import { animationFrameScheduler } from "rxjs";
@@ -21,8 +20,8 @@ export class ProgremGridComponent implements ProgremComponent, StartIteratingCod
         let enWarning = HtmlHelper.p('warning', "Your browser doesn't support canvas.");
         let frWarning = HtmlHelper.p('warning', "Votre navigateur ne supporte pas les canvas.");
         this.canvas = HtmlHelper.canvas('', [enWarning, frWarning]);
-        this.canvas.width = this.progremConfig.colonnes * this.screenConfig.boxSize;
-        this.canvas.height = this.progremConfig.colonnes * this.screenConfig.boxSize;
+        this.canvas.width = this.progremConfig.nombreColonnes * this.screenConfig.boxSize;
+        this.canvas.height = this.progremConfig.nombreLignes * this.screenConfig.boxSize;
 
         let ctx = this.canvas.getContext('2d');
         if (!ctx) {
@@ -76,9 +75,10 @@ export class ProgremGridComponent implements ProgremComponent, StartIteratingCod
         let boxSize = this.screenConfig.boxSize;
         let c = state.colonne;
         let l = state.ligne;
+        let f = state.frame;
 
         // @ts-ignore
-        let couleur = colorerProgrem(c, l, state.contexte);
+        let couleur = colorerProgrem(c, l, f, state.contexte);
         if (couleur) {
             this.ctx.fillStyle = couleur;
             this.ctx.fillRect(c * boxSize, l * boxSize, boxSize, boxSize);
@@ -86,8 +86,8 @@ export class ProgremGridComponent implements ProgremComponent, StartIteratingCod
     }
 
     protected clear(): void {
-        let width = this.screenConfig.boxSize * this.progremConfig.colonnes;
-        let height = this.screenConfig.boxSize * this.progremConfig.lignes;
+        let width = this.screenConfig.boxSize * this.progremConfig.nombreColonnes;
+        let height = this.screenConfig.boxSize * this.progremConfig.nombreLignes;
         this.ctx.clearRect(0, 0, width, height);
         this.ctx.fillStyle = 'antiquewhite';
         this.ctx.fillRect(0, 0, width, height);

@@ -60,13 +60,13 @@ export class ProgremEditorComponent {
 
     public buildProgrem(): string {
         let colorerProgremFunc = `
-        function colorerProgrem(colonne, ligne, contexte) {
+        function colorerProgrem(colonne, ligne, frame, contexte) {
             ${this.colorerProgremTextarea.value}
         }
         `;
 
         let initProgremFunc = `
-        function initialiserProgrem(cadreLargeur, cadreHauteur) {
+        function initialiserProgrem(config, initContexte) {
             ${this.initProgremTextarea.value}
         }
         `;

@@ -1,5 +1,13 @@
 import { EvalScope } from "./EvalService";
-import { setScheduler } from "bluebird";
+
+export class ProgremConfig {
+    constructor(
+        public titre: string,
+        public nombreColonnes: number,
+        public nombreLignes: number,
+        public nombreFrames: number,
+    ) { }
+}
 
 export interface ProgremVerse<AstBaseType> {
     node: AstBaseType
