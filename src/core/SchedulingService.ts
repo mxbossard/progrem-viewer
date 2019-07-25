@@ -136,8 +136,10 @@ class SimpleProgremScheduler implements ProgremScheduler {
 
 export namespace SchedulingService {
 
-    export function buildProgremScheduler(config: ProgremConfig, code: ProgremCode<any>) {
-        return new SimpleProgremScheduler(config, code);
+    export function buildProgremScheduler(config: ProgremConfig, code: ProgremCode<any>, tempo: ProgremTempo) {
+        let scheduler = new SimpleProgremScheduler(config, code);
+        scheduler.tempo = tempo;
+        return scheduler;
     }
 
 }

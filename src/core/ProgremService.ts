@@ -106,7 +106,7 @@ export namespace ProgremService {
         let initProgremFunctionCode = escodeGenerate(progremCode.initialiserProgremFunction().functionRootNode);
         (window as any).eval(initProgremFunctionCode);
 
-        scheduler = SchedulingService.buildProgremScheduler(progremConfig, progremCode);
+        scheduler = SchedulingService.buildProgremScheduler(progremConfig, progremCode, progremMode);
         const titre = document.querySelector('.titre');
         if (titre) {
             titre.innerHTML = progremConfig.titre;
@@ -137,7 +137,10 @@ export namespace ProgremService {
         let modeControlElement = document.querySelector(`.control-panel-component .mode-selector`)as HTMLInputElement;
         modeControlElement.value = String(scheduler.tempo);
         let modeSelectorObservable = Observable.fromEvent(modeControlElement, 'change');
-        modeSelectorObservable.subscribe(event => currentScheduler().tempo = Number((event.target as HTMLInputElement).value));
+        modeSelectorObservable.subscribe(event => {
+            progremMode = Number((event.target as HTMLInputElement).value);
+            currentScheduler().tempo = progremMode;
+        });
     }
 
     export function buildProgrem(url: string, screenConfig: ScreenConfig) {

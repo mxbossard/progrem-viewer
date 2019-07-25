@@ -79,6 +79,7 @@ export class ProgremGridComponent implements ProgremComponent, StartIteratingCod
 
         // @ts-ignore
         let couleur = colorerProgrem(c, l, f, state.contexte);
+        //console.log(`(${c}, ${l}, ${f}, ${state.contexte} => ${couleur}`);
         if (couleur) {
             this.ctx.fillStyle = couleur;
             this.ctx.fillRect(c * boxSize, l * boxSize, boxSize, boxSize);
