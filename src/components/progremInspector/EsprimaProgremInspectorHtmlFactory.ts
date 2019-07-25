@@ -260,7 +260,7 @@ export class EsprimaProgremInspectorHtmlFactory implements EsprimaHtmlCoupletFac
     }
 
     protected buildDefault(node: BaseNode): HTMLElement {
-        console.log('default:', node);
+        //console.log('default:', node);
         let code = escodeGenerate(node);
         let container = HtmlHelper.span('default-' + node.type, code);
         return container;
