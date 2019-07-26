@@ -2,6 +2,12 @@
 
 Demo du viewer de la branche master ici : https://raw.githack.com/mxbossard/progrem-viewer/master/dist/index.html
 
+## Dev
+`npm run build` pour démarrer webpack
+
+### Attention : CORS dans firefox
+Pour tester en local, la politique CORS par défaut interdit de lire un fichier local. Ce qui fait que le lecteur ne peut lire le fichier contenant le progrem. Pour contourner le problème dans about:config, il faut désactiver la clé : security.fileuri.strict_origin_policy
+
 ## Modules / Composants
 
 ### ProgremScheduler
