@@ -71,7 +71,7 @@ function initialiserProgrem3(config, initContexte) {
     initContexte.yIncrement = initContexte.yRange / config.nombreLignes;
     initContexte.xStart = -2.40116;
     initContexte.yStart = -0.5;
-    initContexte.nombreFrames = 42;
+    initContexte.nombreFrames = 32;
     config.nombreFrames = initContexte.nombreFrames;
 }
 

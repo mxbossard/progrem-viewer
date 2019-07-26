@@ -1,10 +1,10 @@
-import { ProgremComponent, ProgremScheduler, StartIteratingCodeListener, GridChangeListener, ProgremState, ProgremConfig } from "../../core/Types";
+import { ProgremComponent, ProgremScheduler, StartIteratingCodeListener, GridChangeListener, ProgremState, ProgremConfig, FrameChangeListener } from "../../core/Types";
 import { ScreenConfig } from "../../core/ScreenService";
 import { HtmlHelper } from "../../core/HtmlHelper";
 import { Observable, Subscription } from 'rxjs/Rx';
 import { animationFrameScheduler } from "rxjs";
 
-export class ProgremGridComponent implements ProgremComponent, StartIteratingCodeListener, GridChangeListener {
+export class ProgremGridComponent implements ProgremComponent, StartIteratingCodeListener, GridChangeListener, FrameChangeListener {
     
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
@@ -32,6 +32,7 @@ export class ProgremGridComponent implements ProgremComponent, StartIteratingCod
 
         scheduler.subscribeStartIteratingCode(this);
         scheduler.subscribeGridChange(this);
+        scheduler.subscribeFrameChange(this);
     }
 
     renderHtml(): HTMLElement {
@@ -84,6 +85,10 @@ export class ProgremGridComponent implements ProgremComponent, StartIteratingCod
             this.ctx.fillStyle = couleur;
             this.ctx.fillRect(c * boxSize, l * boxSize, boxSize, boxSize);
         }
+    }
+
+    fireFrameChange (state: ProgremState): void {
+        //this.clear();
     }
 
     protected clear(): void {
