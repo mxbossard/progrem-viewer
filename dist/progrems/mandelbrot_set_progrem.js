@@ -31,7 +31,7 @@ function mandelbrot(c, profondeurMax) {
     }
     return n;
 }
-
+/*
 function initialiserProgrem(config, initContexte) {
     config.titre = 'Mandelbrot set';
     config.nombreColonnes = 80;
@@ -59,8 +59,8 @@ function initialiserProgrem2(config, initContexte) {
     initContexte.nombreFrames = 50;
     config.nombreFrames = initContexte.nombreFrames;
 }
-
-function initialiserProgrem3(config, initContexte) {
+*/
+function initialiserProgrem(config, initContexte) {
     config.titre = 'Mandelbrot set';
     config.nombreColonnes = 60;
     config.nombreLignes = 30;
@@ -89,9 +89,10 @@ function colorerProgrem(colonne, ligne, frame, contexte) {
     m = complexeModule(z);
 
     hslColorMax = 140;
-    profondeurMax = hslColorMax * 2;
+    magnification = 2
+    profondeurMax = hslColorMax * magnification;
 
     profondeur = mandelbrot(z, profondeurMax);
     if (profondeur === profondeurMax) return 'black';
-    return hslColor(hslColorMax - profondeur * hslColorMax / profondeurMax, '90%', '35%');
+    return hslColor(hslColorMax - profondeur / magnification, '90%', '35%');
 }
