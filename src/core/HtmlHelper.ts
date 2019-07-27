@@ -10,6 +10,25 @@ export abstract class HtmlHelper {
         }
     }
 
+    /**
+     * Test an element and it's hierarchy. Return false when the test fail for an element.
+     * 
+     * @param element 
+     * @param test 
+     */
+    static testHierachy(element: HTMLElement, test: (element: HTMLElement) => boolean): boolean {
+        while (element.parentElement) {
+            console.log('testHierachy:', element);
+            let value = test(element);
+            if (!value) {
+                return false;
+            }
+
+            element = element.parentElement;
+        }
+        return true;
+    }
+
     static span(classes: string|string[], content?: string|HTMLElement|(HTMLElement|string)[]): HTMLSpanElement {
         return HtmlHelper.tag('span', classes, content);
     }

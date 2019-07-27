@@ -1,4 +1,4 @@
-import { ProgremScheduler, VerseIterator, ProgremCode, ProgremVerse, StartIteratingCodeListener, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener, ProgremState, ProgremTempo, ProgremConfig } from "./Types";
+import { ProgremScheduler, VerseIterator, ProgremCode, ProgremVerse, StartIteratingCodeListener, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener, ProgremState, ProgremTempo, ProgremConfig, PaintingListener } from "./Types";
 
 class SimpleProgremScheduler implements ProgremScheduler {
     
@@ -10,6 +10,7 @@ class SimpleProgremScheduler implements ProgremScheduler {
     private gridChangeListeners: GridChangeListener[] = [];
     private lineChangeListeners: LineChangeListener[] = [];
     private frameChangeListeners: FrameChangeListener[] = [];
+    private paintingListeners: PaintingListener[] = [];
 
     public tempo: ProgremTempo = ProgremTempo.ByLine;
 
@@ -35,6 +36,10 @@ class SimpleProgremScheduler implements ProgremScheduler {
 
     subscribeFrameChange(listener: FrameChangeListener): void {
         this.frameChangeListeners.push(listener);
+    }
+
+    subscribePainting(listener: PaintingListener): void {
+        this.paintingListeners.push(listener);
     }
 
     reset(): ProgremState {
@@ -69,6 +74,7 @@ class SimpleProgremScheduler implements ProgremScheduler {
                 let newState = new ProgremState(this.state.colonne, this.state.ligne, this.state.frame, this.state.contexte, verse);
                 this.state = newState;
                 this.codeExecutionListeners.map(l => l.fireCodeExecution(newState));
+                this.paintingListeners.map(l => l.firePainting());
                 return [newState];
             }
 
@@ -125,7 +131,8 @@ class SimpleProgremScheduler implements ProgremScheduler {
         } while(this.tempo === ProgremTempo.ByLine && !notifyLineChange || this.tempo === ProgremTempo.ByFrame && !notifyFrameChange);
 
         this.codeIterator = null;
-
+        this.paintingListeners.map(l => l.firePainting());
+        
         return bufferedStates;
     }
 

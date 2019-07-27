@@ -63,6 +63,7 @@ export interface CodeExecutionListener {fireCodeExecution: NewStateCallback};
 export interface GridChangeListener {fireGridChange: NewStateCallback};
 export interface LineChangeListener {fireLineChange: NewStateCallback};
 export interface FrameChangeListener {fireFrameChange: NewStateCallback};
+export interface PaintingListener {firePainting: () => void};
 
 export enum ProgremTempo {
     ByVerse = 0,
@@ -77,6 +78,8 @@ export interface ProgremScheduler {
     subscribeGridChange(listener: GridChangeListener): void
     subscribeLineChange(listener: LineChangeListener): void
     subscribeFrameChange(listener: FrameChangeListener): void
+    subscribePainting(listener: PaintingListener): void
+
     reset(): ProgremState
     current(): ProgremState
     next(): ProgremState[]

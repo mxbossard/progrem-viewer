@@ -1,8 +1,10 @@
 import { StyleDecorator, ColorProvider } from "../../core/Types";
-import { BaseNode, Identifier } from "estree";
+import { BaseNode, Identifier, MemberExpression } from "estree";
 
 import { ProgremInspectorComponent } from "./ProgremInspectorComponent";
 import { ColorService } from "../../core/ColorService";
+import { generate as escodeGenerate } from 'escodegen';
+import { HtmlHelper } from "../../core/HtmlHelper";
 
 export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
 
@@ -13,10 +15,19 @@ export class ColorVerseVariableDecorator implements StyleDecorator<BaseNode> {
         let varId;
 
         if (node.type === 'Identifier') {
+            // let isParentNotAlreadyVariable = HtmlHelper.testHierachy(element, elt => !elt.classList.contains('variable'));
+            // if (!isParentNotAlreadyVariable) {
+            //     return element;
+            // }
             let n = node as Identifier;
             varId = n.name;
         }
-
+        /*
+        if (node.type === 'MemberExpression') {
+            let n = node as MemberExpression;
+            varId = escodeGenerate(n);
+        }
+        */
         if (varId) {
             let varIndex = this.variableMap.get(varId);
             if (!varIndex) {
