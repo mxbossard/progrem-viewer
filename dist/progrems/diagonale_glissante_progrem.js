@@ -10,7 +10,7 @@ function initialiserProgrem(config, initContexte) {
     initContexte.taille = taille;
     config.nombreColonnes = taille;
     config.nombreLignes = taille;
-    config.nombreFrames = taille;
+    config.nombreFrames = taille * 10;
 }
 
 function colorerProgrem(colonne, ligne, frame, contexte) {

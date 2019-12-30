@@ -21,12 +21,12 @@ export class ProgremInspectorComponent implements ProgremComponent, CodeExecutio
         return htmlComponent;
     }
     
-    fireCodeExecution(state: ProgremState): void {
-        if (!state.verse) {
+    fireCodeExecution(oldState: ProgremState, newState: ProgremState): void {
+        if (!newState.verse) {
             return;
         }
             
-        let htmlVerse = this.htmlFactory.getHtmlVerse(state.verse);
+        let htmlVerse = this.htmlFactory.getHtmlVerse(newState.verse);
         if(htmlVerse) {
             htmlVerse.classList.add(ProgremInspectorComponent.EXECUTING_CLASS);
         }

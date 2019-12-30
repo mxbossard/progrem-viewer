@@ -1,4 +1,4 @@
-import { ProgremScheduler, VerseIterator, ProgremCode, ProgremVerse, StartIteratingCodeListener, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener, ProgremState, ProgremTempo, ProgremConfig, PaintingListener } from "./Types";
+import { ProgremScheduler, VerseIterator, ProgremCode, ProgremVerse, StartIteratingCodeListener, CodeExecutionListener, GridChangeListener, LineChangeListener, FrameChangeListener, ProgremState, ProgremTempo, ProgremConfig, PaintingListener, Subscription, EndAnimationListener } from "./Types";
 
 class SimpleProgremScheduler implements ProgremScheduler {
     
@@ -11,6 +11,7 @@ class SimpleProgremScheduler implements ProgremScheduler {
     private lineChangeListeners: LineChangeListener[] = [];
     private frameChangeListeners: FrameChangeListener[] = [];
     private paintingListeners: PaintingListener[] = [];
+    private endAnimationListeners: EndAnimationListener[] = [];
 
     public tempo: ProgremTempo = ProgremTempo.ByLine;
 
@@ -18,28 +19,116 @@ class SimpleProgremScheduler implements ProgremScheduler {
         this.state = this.reset();
     }
 
-    subscribeStartIteratingCode(listener: StartIteratingCodeListener): void {
-        this.startIteratingCodeListeners.push(listener);
+    subscribeStartIteratingCode(listener: StartIteratingCodeListener): Subscription {
+        console.log('Adding StartIteratingCodeListener:', listener);
+        let listeners = this.startIteratingCodeListeners;
+        listeners.push(listener);
+        let sub: Subscription = {
+            unsubscribe() {
+                listeners.find((l, i) => {
+                    if (l === listener) {
+                        listeners.splice(i, 1)
+                    }
+                });
+            }
+        };
+        return sub;
     }    
 
-    subscribeCodeExecution(listener: CodeExecutionListener): void {
-        this.codeExecutionListeners.push(listener);
+    subscribeCodeExecution(listener: CodeExecutionListener): Subscription {
+        console.log('Adding CodeExecutionListener:', listener);
+        let listeners = this.codeExecutionListeners;
+        listeners.push(listener);
+        let sub: Subscription = {
+            unsubscribe() {
+                listeners.find((l, i) => {
+                    if (l === listener) {
+                        listeners.splice(i, 1)
+                    }
+                });
+            }
+        };
+        return sub;
     }    
     
-    subscribeGridChange(listener: GridChangeListener): void {
-        this.gridChangeListeners.push(listener);
+    subscribeGridChange(listener: GridChangeListener): Subscription {
+        console.log('Adding GridChangeListener:', listener);
+        let listeners = this.gridChangeListeners;
+        listeners.push(listener);
+        let sub: Subscription = {
+            unsubscribe() {
+                listeners.find((l, i) => {
+                    if (l === listener) {
+                        listeners.splice(i, 1)
+                    }
+                });
+            }
+        };
+        return sub;
     }
 
-    subscribeLineChange(listener: LineChangeListener): void {
-        this.lineChangeListeners.push(listener);
+    subscribeLineChange(listener: LineChangeListener): Subscription {
+        console.log('Adding LineChangeListener:', listener);
+        let listeners = this.lineChangeListeners;
+        listeners.push(listener);
+        let sub: Subscription = {
+            unsubscribe() {
+                listeners.find((l, i) => {
+                    if (l === listener) {
+                        listeners.splice(i, 1)
+                    }
+                });
+            }
+        };
+        return sub;
     }
 
-    subscribeFrameChange(listener: FrameChangeListener): void {
-        this.frameChangeListeners.push(listener);
+    subscribeFrameChange(listener: FrameChangeListener): Subscription {
+        console.log('Adding FrameChangeListener:', listener);
+        let listeners = this.frameChangeListeners;
+        listeners.push(listener);
+        let sub: Subscription = {
+            unsubscribe() {
+                listeners.find((l, i) => {
+                    if (l === listener) {
+                        listeners.splice(i, 1)
+                    }
+                });
+            }
+        };
+        return sub;
     }
 
-    subscribePainting(listener: PaintingListener): void {
-        this.paintingListeners.push(listener);
+    subscribePainting(listener: PaintingListener): Subscription {
+        console.log('Adding PaintingListener:', listener);
+        let listeners = this.paintingListeners;
+        listeners.push(listener);
+        let sub: Subscription = {
+            unsubscribe() {
+                listeners.find((l, i) => {
+                    if (l === listener) {
+                        listeners.splice(i, 1)
+                    }
+                });
+            }
+        };
+        return sub;
+    }
+
+    subscribeEndAnimation(listener: EndAnimationListener): Subscription {
+        console.log('Adding EndAnimationListener:', listener);
+        let listeners = this.endAnimationListeners;
+        listeners.push(listener);
+        let sub: Subscription = {
+            unsubscribe() {
+                listeners.find((l, i) => {
+                    if (l === listener) {
+                        listeners.splice(i, 1)
+                    }
+                });
+            }
+        };
+        return sub;
     }
 
     reset(): ProgremState {
@@ -72,8 +161,8 @@ class SimpleProgremScheduler implements ProgremScheduler {
             if (this.codeIterator.hasNext()) {
                 let verse = this.codeIterator.executeNext();
                 let newState = new ProgremState(this.state.colonne, this.state.ligne, this.state.frame, this.state.contexte, verse);
+                this.codeExecutionListeners.map(l => l.fireCodeExecution(this.state, newState));
                 this.state = newState;
-                this.codeExecutionListeners.map(l => l.fireCodeExecution(newState));
                 this.paintingListeners.map(l => l.firePainting());
                 return [newState];
             }
@@ -85,6 +174,7 @@ class SimpleProgremScheduler implements ProgremScheduler {
         let notifyPixelChange = false;
         let notifyLineChange = false;
         let notifyFrameChange = false;
+        let notifyEndAnimation = false;
         let bufferedStates: ProgremState[] = [];
         do {
             let _colonne = this.state.colonne;
@@ -108,20 +198,25 @@ class SimpleProgremScheduler implements ProgremScheduler {
 
             if (_frame >= this.config.nombreFrames) {
                 _frame = 0;
+                notifyEndAnimation = true;
             }
 
             let newState = new ProgremState(_colonne, _ligne, _frame, this.state.contexte, null);
     
             if (notifyPixelChange) {
-                this.gridChangeListeners.map(l => l.fireGridChange(this.state));
+                this.gridChangeListeners.map(l => l.fireGridChange(this.state, newState));
             }
 
             if (notifyLineChange) {
-                this.lineChangeListeners.map(l => l.fireLineChange(this.state));
+                this.lineChangeListeners.map(l => l.fireLineChange(this.state, newState));
             }
 
             if (notifyFrameChange) {
-                this.frameChangeListeners.map(l => l.fireFrameChange(this.state));
+                this.frameChangeListeners.map(l => l.fireFrameChange(this.state, newState));
+            }
+
+            if (notifyEndAnimation) {
+                this.endAnimationListeners.map(l => l.fireEndAnimation());
             }
 
             bufferedStates.push(this.state);

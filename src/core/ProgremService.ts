@@ -153,6 +153,7 @@ export namespace ProgremService {
             bodyElement.appendChild(progremScript);
         }
 
+        console.log('Loading progrem at URL:', url);
         CodeService.loadProgrem(url).then(code => {
             let progremCode = CodeService.progremFactory.buildProgrem(code);
             

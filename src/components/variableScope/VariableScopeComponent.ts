@@ -24,12 +24,12 @@ export class VariableScopeComponent implements ProgremComponent, CodeExecutionLi
         return htmlComponent;
     }
 
-    fireCodeExecution(state: ProgremState): void {
-        if (!state.verse) {
+    fireCodeExecution(oldState: ProgremState, newState: ProgremState): void {
+        if (!newState.verse) {
             return;
         }
 
-        let htmlVerse = this.htmlFactory.getHtmlVerse(state.verse);
+        let htmlVerse = this.htmlFactory.getHtmlVerse(newState.verse);
         // if (this.htmlContainer && htmlVerse) {
         //     this.htmlContainer.appendChild(htmlVerse);
         // }

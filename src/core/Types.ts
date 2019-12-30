@@ -56,14 +56,20 @@ export class ProgremState {
         return this.evalScope.globalEval(expr);
     }
 }
+type StateCallback = (state: ProgremState) => void;
+type NewStateCallback = (oldState: ProgremState, newState: ProgremState) => void;
 
-type NewStateCallback = (state: ProgremState) => void;
-export interface StartIteratingCodeListener {fireStartIteratingCode: NewStateCallback};
+export interface StartIteratingCodeListener {fireStartIteratingCode: StateCallback};
 export interface CodeExecutionListener {fireCodeExecution: NewStateCallback};
+
+/**
+ * Listen for grid change.
+ */
 export interface GridChangeListener {fireGridChange: NewStateCallback};
 export interface LineChangeListener {fireLineChange: NewStateCallback};
 export interface FrameChangeListener {fireFrameChange: NewStateCallback};
 export interface PaintingListener {firePainting: () => void};
+export interface EndAnimationListener {fireEndAnimation: () => void};
 
 export enum ProgremTempo {
     ByVerse = 0,
@@ -72,13 +78,18 @@ export enum ProgremTempo {
     ByFrame
 }
 
+export abstract class Subscription {
+    abstract unsubscribe(): void;
+}
+
 export interface ProgremScheduler {
-    subscribeStartIteratingCode(listener: StartIteratingCodeListener): void
-    subscribeCodeExecution(listener: CodeExecutionListener): void
-    subscribeGridChange(listener: GridChangeListener): void
-    subscribeLineChange(listener: LineChangeListener): void
-    subscribeFrameChange(listener: FrameChangeListener): void
-    subscribePainting(listener: PaintingListener): void
+    subscribeStartIteratingCode(listener: StartIteratingCodeListener): Subscription
+    subscribeCodeExecution(listener: CodeExecutionListener): Subscription
+    subscribeGridChange(listener: GridChangeListener): Subscription
+    subscribeLineChange(listener: LineChangeListener): Subscription
+    subscribeFrameChange(listener: FrameChangeListener): Subscription
+    subscribePainting(listener: PaintingListener): Subscription
+    subscribeEndAnimation(listener: EndAnimationListener): Subscription
 
     reset(): ProgremState
     current(): ProgremState
